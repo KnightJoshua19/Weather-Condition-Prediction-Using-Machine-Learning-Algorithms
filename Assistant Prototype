@@ -1,0 +1,12 @@
+#Author: @codingJoshua123
+"""
+Description:
+This Python program is a prototype for Non-Biodigrable Waste Management Policymaking Assistant
+regulatory agency heads in the Philippines. Reinforcement Learning is used in making the model.
+Deep Q Network algorithm is applied to generate the training data by interacting with the user,
+which is based on the reward and punishment principle.
+"""
+import sklearn as sln
+import pandas as pd
+import numpy as np
+
