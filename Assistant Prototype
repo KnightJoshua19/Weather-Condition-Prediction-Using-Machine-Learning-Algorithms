@@ -2,11 +2,43 @@
 """
 Description:
 This Python program is a prototype for Non-Biodigrable Waste Management Policymaking Assistant
-regulatory agency heads in the Philippines. Reinforcement Learning is used in making the model.
-Deep Q Network algorithm is applied to generate the training data by interacting with the user,
-which is based on the reward and punishment principle.
+regulatory agency heads in the Philippines. Reinforcement Learning is used. Deep Q-Network algorithm 
+is applied to generate the training data by interacting with the user, which is based on the reward 
+and punishment principle. This approach of machine learning does not use a model.
 """
+#Access libraries
 import sklearn as sln
 import pandas as pd
+import gymnasium as gym
 import numpy as np
+import moviepy.config
+import ale_py
+print(ale_py.__version__)
 
+
+epochs = 0
+
+frames = []  # for animation
+done = False
+
+env = gym.make("ALE/Breakout-v5", render_mode="rgb_array")
+observation, info = env.reset()
+
+while not done:
+    action = env.action_space.sample()
+    observation, reward, terminated, truncated, info = env.step(action)
+
+    # Put each rendered frame into dict for animation
+    frames.append(
+        {
+            "frame": env.render(),
+            "state": observation,
+            "action": action,
+            "reward": reward,
+        }
+    )
+
+    epochs += 1
+    if epochs == 1000:
+        break
+    
