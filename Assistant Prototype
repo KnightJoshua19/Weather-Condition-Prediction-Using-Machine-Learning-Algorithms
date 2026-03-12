@@ -6,39 +6,23 @@ regulatory agency heads in the Philippines. Reinforcement Learning is used. Deep
 is applied to generate the training data by interacting with the user, which is based on the reward 
 and punishment principle. This approach of machine learning does not use a model.
 """
-#Access libraries
-import sklearn as sln
-import pandas as pd
-import gymnasium as gym
-import numpy as np
-import moviepy.config
-import ale_py
-print(ale_py.__version__)
+import xgboost as xgb
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
+# Load data
+X, y = load_iris(return_X_y=True)
 
-epochs = 0
+# Split into train/test
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
-frames = []  # for animation
-done = False
+# Create and train model
+model = xgb.XGBClassifier(n_estimators=100, max_depth=3)
+model.fit(X_train, y_train)
 
-env = gym.make("ALE/Breakout-v5", render_mode="rgb_array")
-observation, info = env.reset()
+# Make predictions
+predictions = model.predict(X_test)
 
-while not done:
-    action = env.action_space.sample()
-    observation, reward, terminated, truncated, info = env.step(action)
-
-    # Put each rendered frame into dict for animation
-    frames.append(
-        {
-            "frame": env.render(),
-            "state": observation,
-            "action": action,
-            "reward": reward,
-        }
-    )
-
-    epochs += 1
-    if epochs == 1000:
-        break
-    
+# Check accuracy
+print(accuracy_score(y_test, predictions))
