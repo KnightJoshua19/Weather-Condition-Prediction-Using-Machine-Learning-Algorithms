@@ -21,14 +21,14 @@ getDataFrame = pd.read_csv('C:\\Users\\Joshua\\Waste-Management-Policymaking-Ass
 
 #A) Data Preprocessing
 
-#Data Cleaning
+#A.1)   Data Cleaning
+
+#Filter function
 def apply_filter(series, cutoff=0.1, fs=1.0, order=4):
     if len(series) > order:
         b, a = butter(order, cutoff / (0.5 * fs), btype='low')
         return pd.Series(filtfilt(b, a, series), index=series.index)
     return series
-
-# Apply to numeric columns
 for col in getDataFrame.select_dtypes(include='number').columns:
     getDataFrame[col] = getDataFrame[col].astype(float)
     getDataFrame[col] = apply_filter(getDataFrame[col])
@@ -40,5 +40,8 @@ getDataFrame = getDataFrame.drop_duplicates() #Remove duplicate rows
 
 getDataFrame.to_csv('C:\\Users\\Joshua\\Waste-Management-Policymaking-Assistant\\public_data_waste_fee.csv', index=False)
 
-print(getDataFrame.head())
+print(getDataFrame.head(10))
+
+
+#A.2)   Feature Engineering
 

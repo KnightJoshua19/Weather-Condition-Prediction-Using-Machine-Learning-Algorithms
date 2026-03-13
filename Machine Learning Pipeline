@@ -1,4 +1,5 @@
 Title:  The Machine Learning Pipeline
+ML type:    Supervised Learning
 Date created:   03/12/2026
 
 Description:    
@@ -16,13 +17,17 @@ Source:
 Collected online dataset as training sample.
 
 A.1.2) Data Preprocessing
-There are blank cells, and duplicates that are deleted.
+There are blank cells removed, denoising is done, and duplicates deleted.
 
 A.1.3) Data exploration
+Skipped very time consuming.
 
+A.1.4) Feature engineering
 
-A.1.4) Data engineering
-
+Selection method: 
+Dispersion Ratio - The ratio of variance to the mean value for a feature. Higher dispersion indicates more information. 
+Extraction:
+PCA - The ratio of variance to the mean value for a feature. Higher dispersion indicates more information. 
 
 A.1.5) Data splitting
 

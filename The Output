@@ -9,7 +9,23 @@ Target User:
 Policymaker
 
 ML:
-Helps with policy selection by providing insights from data analysis in text format with supporting statistical results.
+Helps with policy selection by providing insights from data analysis in text format with supporting statistical results. Example output:
+
+--------------------------------------------------------------------------------------------------------------------------------
+(Header text with specific font)
+
+Suggested policy and explains the document with supporting statistical analysis.
+
+------------------------------------------------------------
+Places suggested to be implemented.
+------------------------------------------------------------
+Regional environmental regulatory agency heads.
+------------------------------------------------------------
+Important words included above.
+------------------------------------------------------------
+Period of weeks, months, or years suggested to be implemented.
+
+--------------------------------------------------------------------------------------------------------------------------------
 
 
 Sources to get datasets:
