@@ -1,28 +1,41 @@
-#Author: @codingJoshua123
 """
+#Author: @codingJoshua123
+
 Description:
 This Python program is a prototype for Non-Biodigrable Waste Management Policymaking Assistant
 regulatory agency heads in the Philippines. Reinforcement Learning is used. Deep Q-Network algorithm 
 is applied to generate the training data by interacting with the user, which is based on the reward 
 and punishment principle. This approach of machine learning does not use a model.
 """
+
 import xgboost as xgb
+import numpy as np
+import pandas as pd
+
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+from scipy.signal import butter, filtfilt
 
-# Load data
-X, y = load_iris(return_X_y=True)
+getDataFrame = pd.read_csv('C:\\Users\\Joshua\\Waste-Management-Policymaking-Assistant\\public_data_waste_fee.csv')
 
-# Split into train/test
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+#A) Data Preprocessing
 
-# Create and train model
-model = xgb.XGBClassifier(n_estimators=100, max_depth=3)
-model.fit(X_train, y_train)
+#Data Cleaning
+column_mean = getDataFrame.select_dtypes(include="number").rolling(window=5, center=True).mean() #Get mean and denoising the data
+getDataFrame = getDataFrame.fillna(column_mean) #Remove  missing values
+getDataFrame.update(column_mean)
+def apply_filter(series, cutoff=0.1, fs=1.0, order=4):
+    if len(series) > order:
+        b, a = butter(order, cutoff / (0.5 * fs), btype='low')
+        return pd.Series(filtfilt(b, a, series), index=series.index)
+    return series
 
-# Make predictions
-predictions = model.predict(X_test)
+for col in getDataFrame.select_dtypes(include='number').columns:
+    getDataFrame[col] = apply_filter(getDataFrame[col])
+getDataFrame = getDataFrame.drop_duplicates() #Remove duplicate rows
 
-# Check accuracy
-print(accuracy_score(y_test, predictions))
+getDataFrame.to_csv('C:\\Users\\Joshua\\Waste-Management-Policymaking-Assistant\\public_data_waste_fee.csv', index=False)
+
+print(getDataFrame.head())
+

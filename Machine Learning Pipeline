@@ -1,6 +1,9 @@
 Title:  The Machine Learning Pipeline
 Date created:   03/12/2026
 
+Description:    
+The model will do the work as Natural Language Generation (NLG). Since this model is supposed to be used by policy makers, choosing appropraite words is critical. So, I'm gonna use Extractive NLG (Belcic & Stryker, n.d.).
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 A) The Pipeline 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -9,12 +12,17 @@ A.1) Data Preprocessing
 
 
 A.1.1) Data Ingestion
+Source: 
+Collected online dataset as training sample.
 
 A.1.2) Data Preprocessing
+There are blank cells, and duplicates that are deleted.
 
 A.1.3) Data exploration
 
+
 A.1.4) Data engineering
+
 
 A.1.5) Data splitting
 
