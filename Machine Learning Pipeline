@@ -17,7 +17,7 @@ Source:
 Collected online dataset as training sample.
 
 A.1.2) Data Preprocessing
-There are blank cells removed, denoising is done, and duplicates deleted.
+A blank cell is replaced by the average value of column, denoising is done, and duplicates deleted.
 
 A.1.3) Data exploration
 Skipped very time consuming.
@@ -25,7 +25,8 @@ Skipped very time consuming.
 A.1.4) Feature engineering
 
 Selection method: 
-Dispersion Ratio - The ratio of variance to the mean value for a feature. Higher dispersion indicates more information. 
+Variance Threshold
+
 Extraction:
 PCA - The ratio of variance to the mean value for a feature. Higher dispersion indicates more information. 
 

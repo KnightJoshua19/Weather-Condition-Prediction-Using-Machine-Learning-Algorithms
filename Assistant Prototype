@@ -38,10 +38,17 @@ getDataFrame = getDataFrame.fillna(column_mean) #Remove  missing values
 getDataFrame.update(column_mean)
 getDataFrame = getDataFrame.drop_duplicates() #Remove duplicate rows
 
-getDataFrame.to_csv('C:\\Users\\Joshua\\Waste-Management-Policymaking-Assistant\\public_data_waste_fee.csv', index=False)
-
-print(getDataFrame.head(10))
-
 
 #A.2)   Feature Engineering
 
+#Selection: Variance Threshold
+
+#Mean Absolute Difference
+def mean_absolute_difference(series):
+    return np.mean(np.abs(series - np.mean(series)))
+for col in getDataFrame.select_dtypes(include='number').columns:
+    mad = mean_absolute_difference(getDataFrame[col])
+    if mad < 0.1: #Threshold for low variance
+        getDataFrame.drop(columns=[col], inplace=True)
+
+print(getDataFrame.head(10))
