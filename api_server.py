@@ -13,8 +13,20 @@ import os
 from datetime import datetime
 import sys
 
-# Add the assistant module to the path
+# Add the project root to the path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Import policy model components
+try:
+    from policy_model import (
+        WasteManagementPolicyConfig,
+        PolicyDataPreprocessor,
+        PolicyIntelligenceGenerator
+    )
+    POLICY_MODEL_AVAILABLE = True
+except ImportError:
+    print("[API] Warning: policy_model not available, using mock routines")
+    POLICY_MODEL_AVAILABLE = False
 
 app = Flask(__name__)
 CORS(app)
@@ -616,25 +628,40 @@ def initialize_model():
     global model_instance, preprocessor_instance, data_generator
     
     try:
-        # Import the main module
-        exec(open('Assistant Prototype').read(), globals())
+        if not POLICY_MODEL_AVAILABLE:
+            print("[API] Policy model not available - API will run in mock mode")
+            return False
         
         print("[API] Initializing ML model...")
-        config = WasteDataPipelineConfig()
+        config = WasteManagementPolicyConfig()
         
-        preprocessor_instance = DataPreprocessor(config)
-        data_generator = DataToTextGenerator(config)
+        preprocessor_instance = PolicyDataPreprocessor(config)
+        data_generator = PolicyIntelligenceGenerator(config)
         
         # Build a minimal model for predictions
-        data_generator.build_keras_model(input_dim=7)
+        data_generator.build_model(input_dim=7)
         model_instance = data_generator.model
         
-        print("[API] Model initialized successfully")
+        print("[API] ✓ Model initialized successfully")
         return True
     except Exception as e:
         print(f"[API] Model initialization error: {e}")
+        print("[API] Continuing with API in mock mode...")
         return False
 
 if __name__ == '__main__':
+    # Get configuration from environment
+    flask_env = os.getenv('FLASK_ENV', 'development')
+    flask_host = os.getenv('FLASK_HOST', '0.0.0.0')  # 0.0.0.0 for Docker compatibility
+    flask_port = int(os.getenv('FLASK_PORT', 5000))
+    flask_debug = flask_env == 'development'
+    
+    print(f"\n[API] Starting Waste Management Policy ML Server")
+    print(f"[API] Environment: {flask_env}")
+    print(f"[API] Host: {flask_host}:{flask_port}")
+    
+    # Initialize model (optional - API works without it)
     initialize_model()
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    
+    # Run Flask app
+    app.run(debug=flask_debug, host=flask_host, port=flask_port, threaded=True)

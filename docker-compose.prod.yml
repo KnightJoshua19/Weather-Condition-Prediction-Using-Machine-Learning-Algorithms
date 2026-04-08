@@ -14,11 +14,18 @@ services:
       FLASK_HOST: 0.0.0.0
       FLASK_PORT: 5000
       CORS_ORIGINS: 'http://localhost:5173,http://frontend:5173,http://localhost:3000'
+      DATABASE_URL: sqlite:////app/data/policy_analysis.db
+      LOG_DIR: /app/logs
+      CACHE_DIR: /app/.model_cache
     volumes:
       - ./public_data_waste_fee.csv:/app/public_data_waste_fee.csv:ro
       - ./The Output:/app/The Output
+      - backend-data:/app/data
+      - backend-logs:/app/logs
+      - backend-cache:/app/.model_cache
     networks:
       - waste-management-network
+    restart: unless-stopped
     command: python api_server.py
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
@@ -27,7 +34,7 @@ services:
       retries: 3
       start_period: 40s
 
-  # Frontend Application (Optional - if running React in Docker)
+  # Frontend Application
   frontend:
     build:
       context: './Non-Biodigradable Policymaking Assistant_UserInterface'
@@ -38,16 +45,28 @@ services:
     environment:
       REACT_APP_API_URL: http://backend:5000/api
       REACT_APP_ENV: production
+      VITE_PORT: 5173
     networks:
       - waste-management-network
+    restart: unless-stopped
     depends_on:
       backend:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 networks:
   waste-management-network:
     driver: bridge
 
 volumes:
-  data:
+  backend-data:
+    driver: local
+  backend-logs:
+    driver: local
+  backend-cache:
     driver: local
