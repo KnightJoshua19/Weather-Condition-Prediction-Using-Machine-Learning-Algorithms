@@ -236,15 +236,15 @@ class DataToTextGenerator:
         print("[E.1] Building Keras model for data analysis...")
         
         model = models.Sequential([
-            layers.Dense(64, activation='relu', input_dim=input_dim, name='input_layer'),
+            layers.Dense(64, activation='relu', input_dim=input_dim, name='dense_1'),
             layers.BatchNormalization(name='batch_norm_1'),
-            layers.Dropout(0.3),
+            layers.Dropout(0.3, name='dropout_1'),
             
-            layers.Dense(32, activation='relu', name='hidden_layer_1'),
+            layers.Dense(32, activation='relu', name='dense_2'),
             layers.BatchNormalization(name='batch_norm_2'),
-            layers.Dropout(0.2),
+            layers.Dropout(0.2, name='dropout_2'),
             
-            layers.Dense(16, activation='relu', name='hidden_layer_2'),
+            layers.Dense(16, activation='relu', name='dense_3'),
             layers.Dense(1, activation='sigmoid', name='output_layer')
         ], name='WasteManagementPredictor')
         
