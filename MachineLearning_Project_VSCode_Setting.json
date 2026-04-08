@@ -6,6 +6,7 @@
     "ms-python.python",
     "github.vscode-pull-request-github",
     "github.github-vscode-theme",
-    "eamodio.gitlens"
+    "eamodio.gitlens",
+    "ms-azuretools.vscode-containers"
   ]
 }
