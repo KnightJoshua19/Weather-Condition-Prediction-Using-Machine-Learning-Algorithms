@@ -1,0 +1,11 @@
+{
+  "Author comments": "This is a sample project file for a machine learning project in Visual Studio Code. It includes basic settings and recommended extensions for Python development and GitHub integration.",
+  "name": "Machine Learning Project",
+
+  "recommendations": [
+    "ms-python.python",
+    "github.vscode-pull-request-github",
+    "github.github-vscode-theme",
+    "eamodio.gitlens"
+  ]
+}
