@@ -1,0 +1,71 @@
+{
+    "algorithms": [
+        {
+            "algorithm": "Neural Network Policy Analyzer",
+            "timestamp": "2026-04-15T21:20:38.578054",
+            "performance_metrics": {
+                "MSE": {
+                    "value": 0.026467203682393557,
+                    "formula": "(1/n) * \u03a3(y_i - \u0177_i)\u00b2",
+                    "description": "Mean Squared Error - penalizes larger errors"
+                },
+                "MAE": {
+                    "value": 0.026467203682393557,
+                    "formula": "(1/n) * \u03a3|y_i - \u0177_i|",
+                    "description": "Mean Absolute Error - average prediction error"
+                },
+                "R_squared": {
+                    "value": 0.8937935065625167,
+                    "value_range": "[0, 1]",
+                    "formula": "1 - (SS_res / SS_tot)",
+                    "description": "Coefficient of Determination - proportion of variance explained",
+                    "interpretation": "Good - Model explains 70-90% of variance"
+                }
+            },
+            "complexity_analysis": {
+                "space_complexity": {
+                    "big_o": "O(n*m)",
+                    "description": "Linear with input dimensions and hidden units",
+                    "total_parameters": 5892,
+                    "layer_breakdown": [
+                        {
+                            "layer": "Layer_0",
+                            "input_units": 34,
+                            "output_units": 34,
+                            "parameters": 1156
+                        },
+                        {
+                            "layer": "Layer_1",
+                            "input_units": 34,
+                            "output_units": 64,
+                            "parameters": 2176
+                        },
+                        {
+                            "layer": "Layer_2",
+                            "input_units": 64,
+                            "output_units": 32,
+                            "parameters": 2048
+                        },
+                        {
+                            "layer": "Layer_3",
+                            "input_units": 32,
+                            "output_units": 16,
+                            "parameters": 512
+                        }
+                    ]
+                },
+                "time_complexity": {
+                    "big_o": "O(e*b*ops)",
+                    "formula": "epochs * batch_size * operations_per_batch",
+                    "values": {
+                        "epochs": 50,
+                        "batch_size": 32,
+                        "operations_per_forward_pass": 5908,
+                        "total_estimated_operations": 9452800
+                    },
+                    "description": "Proportional to training iterations and model size"
+                }
+            }
+        }
+    ]
+}
