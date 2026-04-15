@@ -1,0 +1,6 @@
+services:
+  wastemanagementpolicymakingassistant:
+    image: wastemanagementpolicymakingassistant
+    build:
+      context: .
+      dockerfile: ./Dockerfile

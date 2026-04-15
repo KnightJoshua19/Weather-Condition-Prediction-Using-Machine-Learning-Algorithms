@@ -43,11 +43,10 @@ except ImportError:
     print("WARNING: NLTK not installed")
 
 try:
-    import keras
-    from keras import layers, models, optimizers
-    print(f"[LOADED] Keras version {keras.__version__} loaded successfully")
+    import xgboost as xgb
+    print(f"[LOADED] XGBoost version {xgb.__version__} loaded successfully")
 except ImportError:
-    print("ERROR: Keras not installed. Run: pip install keras")
+    print("ERROR: XGBoost not installed. Run: pip install xgboost")
     raise
 
 # ============================================================================
@@ -610,94 +609,92 @@ class PolicyIntelligenceGenerator:
     # MAIN ALGORITHM: NEURAL NETWORK ARCHITECTURE FOR POLICY ANALYSIS
     # ============================================================================
     # This section implements the core machine learning algorithm for waste management
-    # policy analysis. The neural network is designed to process regional waste data
+    # policy analysis. XGBoost is used to process regional waste data
     # and generate policy recommendations based on learned patterns.
     #
     # Algorithm Overview:
     # - Input: Preprocessed regional waste management features (e.g., waste density,
     #   urbanization rate, segregation rates)
-    # - Architecture: Multi-layer perceptron with dropout and batch normalization
+    # - Architecture: Gradient boosting with 100 estimators, max_depth=6
     # - Output: Binary classification for policy readiness assessment
     #
-    # Time Complexity: O(epochs * batch_size * input_dim * hidden_units)
-    # Space Complexity: O(parameters) where parameters ≈ input_dim * 64 + 64*32 + 32*16 + 16*1
+    # Time Complexity: O(n_trees * tree_depth * n_features * log(n_samples))
+    # Space Complexity: O(n_trees) for tree structures
     #
-    # Key Components:
-    # 1. Feature Extraction Layer: 64 neurons, ReLU activation
-    # 2. Pattern Recognition Layer: 32 neurons, ReLU activation  
-    # 3. Policy Synthesis Layer: 16 neurons, ReLU activation
-    # 4. Policy Recommendation Layer: 1 neuron, Sigmoid activation
+    # Key Parameters:
+    # 1. n_estimators: 100 boosting rounds
+    # 2. max_depth: 6 for balanced model complexity
+    # 3. learning_rate: 0.1 for regularization
+    # 4. subsample: 0.8 for row subsampling
+    # 5. colsample_bytree: 0.8 for column subsampling
     #
-    # Regularization: Dropout (0.3, 0.2) and Batch Normalization for stability
+    # Advantages: Better generalization on structured data, faster inference
     # ============================================================================
     def build_model(self, input_dim):
-        """Build policy analysis neural network"""
-        print("[POLICY-MODEL] Building policy analysis model...")
+        """Build XGBoost policy analysis classifier"""
+        print("[POLICY-MODEL] Building XGBoost policy analysis model...")
         
-        model = models.Sequential([
-            layers.Dense(64, activation='relu', input_dim=input_dim, name='feature_extraction'),
-            layers.BatchNormalization(name='batch_norm_1'),
-            layers.Dropout(0.3, name='dropout_1'),
-            
-            layers.Dense(32, activation='relu', name='pattern_recognition'),
-            layers.BatchNormalization(name='batch_norm_2'),
-            layers.Dropout(0.2, name='dropout_2'),
-            
-            layers.Dense(16, activation='relu', name='policy_synthesis'),
-            layers.Dense(1, activation='sigmoid', name='policy_recommendation')
-        ], name='WastePolicyAnalyzer')
-        
-        model.compile(
-            optimizer=optimizers.Adam(learning_rate=0.001),
-            loss='binary_crossentropy',
-            metrics=['accuracy', 'mse']
+        self.model = xgb.XGBClassifier(
+            n_estimators=100,
+            max_depth=6,
+            learning_rate=0.1,
+            subsample=0.8,
+            colsample_bytree=0.8,
+            random_state=42,
+            eval_metric='logloss',
+            verbosity=0,
+            objective='binary:logistic'
         )
         
-        print(f"  [CREATED] Policy analysis model created: {model.count_params():,} parameters")
-        self.model = model
-        return model
+        print(f"  [CREATED] XGBoost policy analysis model initialized")
+        return self.model
     
     def train_model(self, X_train, y_train, X_val, y_val):
-        """Train model"""
-        print("[POLICY-MODEL] Training policy model...")
+        """Train XGBoost model"""
+        print("[POLICY-MODEL] Training XGBoost policy model...")
         
-        history = self.model.fit(
+        # Train XGBoost with early stopping
+        self.model.fit(
             X_train, y_train,
-            validation_data=(X_val, y_val),
-            epochs=self.config.epochs,
-            batch_size=self.config.batch_size,
-            verbose=0
+            eval_set=[(X_val, y_val)],
+            early_stopping_rounds=10,
+            verbose=False
         )
         
-        final_acc = history.history['accuracy'][-1]
-        print(f"  [COMPLETED] Model training complete: {final_acc:.2%} accuracy")
+        # Calculate validation accuracy
+        val_accuracy = self.model.score(X_val, y_val)
+        print(f"  [COMPLETED] Model training complete: {val_accuracy:.2%} accuracy")
+        
+        # Return a simple history-like object for compatibility
+        history = {
+            'train_accuracy': [self.model.score(X_train, y_train)],
+            'val_accuracy': [val_accuracy]
+        }
         return history
     
     def visualize_complexity(self, input_sizes=None):
         """
-        Visualize time and space complexity of the neural network algorithm
+        Visualize time and space complexity of the XGBoost algorithm
         
-        Time Complexity: O(epochs * batch_size * input_dim * hidden_units)
-        Space Complexity: O(parameters)
+        Time Complexity: O(n_trees * tree_depth * n_features * log(n_samples))
+        Space Complexity: O(n_trees) for tree structures
         
         This method plots complexity curves for different input dimensions
         """
         if input_sizes is None:
             input_sizes = [10, 20, 50, 100, 200, 500]
         
-        # Calculate space complexity (parameters)
-        space_complexity = []
-        for dim in input_sizes:
-            params = dim * 64 + 64 * 32 + 32 * 16 + 16 * 1  # Approximate parameter count
-            space_complexity.append(params)
+        # Calculate space complexity (number of trees)
+        n_trees = 100  # XGBoost estimators
+        space_complexity = [n_trees * dim for dim in input_sizes]  # Rough estimate
         
         # Calculate time complexity (rough estimate)
-        epochs = self.config.epochs
-        batch_size = self.config.batch_size
+        tree_depth = 6
+        sample_size = 1000  # Approximate training samples
         time_complexity = []
         for dim in input_sizes:
-            # Time ≈ epochs * batch_size * (input_dim * 64 + 64*32 + 32*16 + 16*1) operations
-            operations = epochs * batch_size * (dim * 64 + 64*32 + 32*16 + 16*1)
+            # Time ≈ n_trees * tree_depth * dim * log(sample_size)
+            operations = n_trees * tree_depth * dim * np.log(sample_size + 1)
             time_complexity.append(operations)
         
         # Create visualization
@@ -705,14 +702,14 @@ class PolicyIntelligenceGenerator:
         
         # Space complexity plot
         ax1.plot(input_sizes, space_complexity, 'b-o', linewidth=2, markersize=6)
-        ax1.set_title('Space Complexity: O(parameters)')
+        ax1.set_title('Space Complexity: O(n_trees × features)')
         ax1.set_xlabel('Input Dimension')
-        ax1.set_ylabel('Number of Parameters')
+        ax1.set_ylabel('Estimated Tree Size')
         ax1.grid(True, alpha=0.3)
         
         # Time complexity plot
         ax2.plot(input_sizes, time_complexity, 'r-s', linewidth=2, markersize=6)
-        ax2.set_title('Time Complexity: O(epochs × batch_size × operations)')
+        ax2.set_title('Time Complexity: O(n_trees × depth × features × log(n))')
         ax2.set_xlabel('Input Dimension')
         ax2.set_ylabel('Estimated Operations')
         ax2.grid(True, alpha=0.3)
@@ -1481,43 +1478,12 @@ def main():
     history = generator.train_model(X_train, y_train, X_val, y_val)
     
     # Evaluation
-    print("\n[STAGE-3] POLICY ANALYSIS & METRICS RECORDING")
+    print("\n[STAGE-3] POLICY ANALYSIS")
     print("-" * 70)
     
-    y_pred = (generator.model.predict(X_test, verbose=0) > 0.5).astype(int).flatten()
+    y_pred = generator.model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     print(f"[EVALUATION] Model accuracy: {accuracy:.2%}\n")
-    
-    # Record algorithm metrics
-    print("[METRICS] Recording algorithm performance metrics...")
-    metrics_recorder = AlgorithmMetricsRecorder('algorithm_metrics.json')
-    
-    # Calculate performance metrics: MSE, MAE, R-squared
-    metrics = metrics_recorder.calculate_performance_metrics(
-        y_test, y_pred, 
-        algorithm_name='Neural Network Policy Analyzer'
-    )
-    
-    # Add complexity analysis to metrics
-    hidden_layers = [X_train.shape[1], 64, 32, 16, 1]
-    metrics = metrics_recorder.add_complexity_analysis(
-        metrics,
-        input_dim=X_train.shape[1],
-        hidden_layers=hidden_layers,
-        epochs=config.epochs,
-        batch_size=config.batch_size
-    )
-    
-    # Save metrics to file
-    metrics_recorder.save_metrics(metrics)
-    
-    # Print metrics report
-    metrics_recorder.print_metrics_report(metrics)
-    
-    # Export metrics to Excel with minimalistic styling
-    print("[EXPORT] Exporting metrics to Excel file...")
-    metrics_recorder.save_to_excel('algorithm_metrics.xlsx')
-    print()
     
     # Sample policy brief
     print("[STAGE-4] SAMPLE POLICY BRIEF")

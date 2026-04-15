@@ -1,34 +1,23 @@
-# Dockerfile for Waste Management Policy ML System
-# Build: docker build -t waste-management-api .
-# Run: docker run -p 5000:5000 waste-management-api
+# For more information, please refer to https://aka.ms/vscode-docker-python
+FROM python:3-slim
 
-FROM python:3.11-slim
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
 
-# Set working directory
-WORKDIR /app
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=1
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements
+# Install pip requirements
 COPY requirements.txt .
+RUN python -m pip install -r requirements.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /app
+COPY . /app
 
-# Copy application code
-COPY . .
+# Creates a non-root user with an explicit UID and adds permission to access the /app folder
+# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+USER appuser
 
-# Expose port
-EXPOSE 5000
-
-# Set environment
-ENV FLASK_APP=api_server.py
-ENV FLASK_ENV=production
-
-# Run the application
-CMD ["python", "api_server.py"]
+# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
+CMD ["python", "policy_model.py"]
