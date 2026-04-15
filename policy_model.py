@@ -18,6 +18,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 
+# Excel Export Library
+try:
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    print("[LOADED] OpenPyXL library loaded successfully")
+except ImportError:
+    print("WARNING: openpyxl not installed. Install with: pip install openpyxl")
+
 # Natural Language Generation Imports
 try:
     from transformers import pipeline
@@ -316,6 +324,172 @@ class AlgorithmMetricsRecorder:
             print(f"  Total Operations: {values.get('total_estimated_operations'):,}")
         
         print("\n" + "="*70 + "\n")
+    
+    def save_to_excel(self, excel_file='algorithm_metrics.xlsx'):
+        """
+        Save metrics to Excel file with minimalistic styling
+        Includes performance metrics, time and space complexity
+        """
+        try:
+            from openpyxl.utils import get_column_letter
+            
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Algorithm Metrics"
+            
+            # Define minimalistic styles
+            header_fill = PatternFill(start_color="D3D3D3", end_color="D3D3D3", fill_type="solid")
+            header_font = Font(bold=True, size=11, color="000000")
+            thin_border = Border(
+                left=Side(style='thin'),
+                right=Side(style='thin'),
+                top=Side(style='thin'),
+                bottom=Side(style='thin')
+            )
+            center_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
+            left_align = Alignment(horizontal='left', vertical='center', wrap_text=True)
+            
+            # Set column widths
+            ws.column_dimensions['A'].width = 25
+            ws.column_dimensions['B'].width = 18
+            ws.column_dimensions['C'].width = 18
+            ws.column_dimensions['D'].width = 18
+            ws.column_dimensions['E'].width = 20
+            
+            row = 1
+            
+            # Add title
+            ws[f'A{row}'] = "Algorithm Performance Metrics"
+            ws[f'A{row}'].font = Font(bold=True, size=13)
+            ws.merge_cells(f'A{row}:E{row}')
+            row += 2
+            
+            # Add header row for performance metrics
+            headers = ['Algorithm', 'MSE', 'MAE', 'R-squared', 'Timestamp']
+            for col_idx, header in enumerate(headers, 1):
+                cell = ws.cell(row=row, column=col_idx)
+                cell.value = header
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.border = thin_border
+                cell.alignment = center_align
+            
+            row += 1
+            
+            # Add metrics data
+            for algo in self.metrics_history['algorithms']:
+                mse = algo.get('performance_metrics', {}).get('MSE', {}).get('value', 'N/A')
+                mae = algo.get('performance_metrics', {}).get('MAE', {}).get('value', 'N/A')
+                r2 = algo.get('performance_metrics', {}).get('R_squared', {}).get('value', 'N/A')
+                
+                ws[f'A{row}'] = algo.get('algorithm', '')
+                ws[f'B{row}'] = mse if isinstance(mse, str) else f'{mse:.6f}'
+                ws[f'C{row}'] = mae if isinstance(mae, str) else f'{mae:.6f}'
+                ws[f'D{row}'] = r2 if isinstance(r2, str) else f'{r2:.6f}'
+                ws[f'E{row}'] = algo.get('timestamp', '')
+                
+                for col in range(1, 6):
+                    cell = ws.cell(row=row, column=col)
+                    cell.border = thin_border
+                    if col == 1 or col == 5:
+                        cell.alignment = left_align
+                    else:
+                        cell.alignment = center_align
+                
+                row += 1
+            
+            # Add complexity analysis section
+            row += 2
+            ws[f'A{row}'] = "Time & Space Complexity Analysis"
+            ws[f'A{row}'].font = Font(bold=True, size=12)
+            ws.merge_cells(f'A{row}:C{row}')
+            row += 1
+            
+            # Complexity headers
+            complexity_headers = ['Algorithm', 'Space Complexity', 'Time Complexity']
+            for col_idx, header in enumerate(complexity_headers, 1):
+                cell = ws.cell(row=row, column=col_idx)
+                cell.value = header
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.border = thin_border
+                cell.alignment = center_align
+            
+            row += 1
+            
+            # Add complexity data
+            for algo in self.metrics_history['algorithms']:
+                complexity = algo.get('complexity_analysis', {})
+                space_big_o = complexity.get('space_complexity', {}).get('big_o', 'N/A')
+                time_big_o = complexity.get('time_complexity', {}).get('big_o', 'N/A')
+                
+                ws[f'A{row}'] = algo.get('algorithm', '')
+                ws[f'B{row}'] = space_big_o
+                ws[f'C{row}'] = time_big_o
+                
+                for col in range(1, 4):
+                    cell = ws.cell(row=row, column=col)
+                    cell.border = thin_border
+                    cell.alignment = center_align
+                
+                row += 1
+            
+            # Add detailed complexity metrics
+            row += 2
+            ws[f'A{row}'] = "Detailed Complexity Metrics"
+            ws[f'A{row}'].font = Font(bold=True, size=12)
+            ws.merge_cells(f'A{row}:E{row}')
+            row += 1
+            
+            # Detailed headers
+            detail_headers = ['Algorithm', 'Total Parameters', 'Epochs', 'Batch Size', 'Total Operations']
+            for col_idx, header in enumerate(detail_headers, 1):
+                cell = ws.cell(row=row, column=col_idx)
+                cell.value = header
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.border = thin_border
+                cell.alignment = center_align
+            
+            row += 1
+            
+            # Add detailed complexity data
+            for algo in self.metrics_history['algorithms']:
+                complexity = algo.get('complexity_analysis', {})
+                total_params = complexity.get('space_complexity', {}).get('total_parameters', 'N/A')
+                time_values = complexity.get('time_complexity', {}).get('values', {})
+                epochs = time_values.get('epochs', 'N/A')
+                batch_size = time_values.get('batch_size', 'N/A')
+                total_ops = time_values.get('total_estimated_operations', 'N/A')
+                
+                ws[f'A{row}'] = algo.get('algorithm', '')
+                ws[f'B{row}'] = total_params if isinstance(total_params, str) else f'{total_params:,}'
+                ws[f'C{row}'] = epochs
+                ws[f'D{row}'] = batch_size
+                ws[f'E{row}'] = total_ops if isinstance(total_ops, str) else f'{total_ops:,}'
+                
+                for col in range(1, 6):
+                    cell = ws.cell(row=row, column=col)
+                    cell.border = thin_border
+                    cell.alignment = center_align
+                
+                row += 1
+            
+            # Save workbook
+            wb.save(excel_file)
+            print(f"Metrics exported to {excel_file}")
+            return True
+            
+        except Exception as e:
+            print(f"Error saving to Excel: {e}")
+            return False
+    
+    def export_metrics_to_excel(self, excel_file='algorithm_metrics.xlsx'):
+        """
+        Convenience method to export metrics to Excel file
+        Wraps save_to_excel method
+        """
+        return self.save_to_excel(excel_file)
 
 
 # ============================================================================
@@ -1340,6 +1514,11 @@ def main():
     # Print metrics report
     metrics_recorder.print_metrics_report(metrics)
     
+    # Export metrics to Excel with minimalistic styling
+    print("[EXPORT] Exporting metrics to Excel file...")
+    metrics_recorder.save_to_excel('algorithm_metrics.xlsx')
+    print()
+    
     # Sample policy brief
     print("[STAGE-4] SAMPLE POLICY BRIEF")
     print("-" * 70)
@@ -1384,6 +1563,7 @@ def interactive_mode(results):
     print("  • Type 'complexity' or 'algorithm' to analyze complexity")
     print("  • Type 'visualize' to display space/time complexity graphs")
     print("  • Type 'metrics' to view algorithm performance metrics")
+    print("  • Type 'export' or 'excel' to export metrics to Excel file")
     print("  • Type 'help' for detailed topic list")
     print("  • Type 'quit', 'exit', or 'q' to end session\n")
     print("="*70 + "\n")
@@ -1407,7 +1587,20 @@ def interactive_mode(results):
                 print("  • 'policy recommendations?' - Evidence-based policy options")
                 print("  • 'complexity analysis?' - Algorithm efficiency details")
                 print("  • 'visualize' - Display complexity visualization")
-                print("  • 'metrics' - View algorithm performance metrics\n")
+                print("  • 'metrics' - View algorithm performance metrics")
+                print("  • 'export' or 'excel' - Export metrics to Excel file\n")
+                continue
+            
+            if question.lower() in ['export', 'excel']:
+                if metrics_recorder:
+                    print("\n[EXPORTING] Saving metrics to Excel file...")
+                    success = metrics_recorder.save_to_excel('algorithm_metrics.xlsx')
+                    if success:
+                        print("[SUCCESS] Excel file created: algorithm_metrics.xlsx\n")
+                    else:
+                        print("[ERROR] Failed to create Excel file.\n")
+                else:
+                    print("\n[ERROR] Metrics recorder not available.\n")
                 continue
             
             if question.lower() == 'metrics':

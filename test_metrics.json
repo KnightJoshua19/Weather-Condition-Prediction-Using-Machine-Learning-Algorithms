@@ -1,0 +1,138 @@
+{
+    "algorithms": [
+        {
+            "algorithm": "Test Algorithm",
+            "timestamp": "2026-04-15T21:43:40.454460",
+            "performance_metrics": {
+                "MSE": {
+                    "value": 0.1,
+                    "formula": "(1/n) * \u03a3(y_i - \u0177_i)\u00b2",
+                    "description": "Mean Squared Error - penalizes larger errors"
+                },
+                "MAE": {
+                    "value": 0.1,
+                    "formula": "(1/n) * \u03a3|y_i - \u0177_i|",
+                    "description": "Mean Absolute Error - average prediction error"
+                },
+                "R_squared": {
+                    "value": 0.5833333333333334,
+                    "value_range": "[0, 1]",
+                    "formula": "1 - (SS_res / SS_tot)",
+                    "description": "Coefficient of Determination - proportion of variance explained",
+                    "interpretation": "Moderate - Model explains 50-70% of variance"
+                }
+            },
+            "complexity_analysis": {
+                "space_complexity": {
+                    "big_o": "O(n*m)",
+                    "description": "Linear with input dimensions and hidden units",
+                    "total_parameters": 3217,
+                    "layer_breakdown": [
+                        {
+                            "layer": "Layer_0",
+                            "input_units": 9,
+                            "output_units": 9,
+                            "parameters": 81
+                        },
+                        {
+                            "layer": "Layer_1",
+                            "input_units": 9,
+                            "output_units": 64,
+                            "parameters": 576
+                        },
+                        {
+                            "layer": "Layer_2",
+                            "input_units": 64,
+                            "output_units": 32,
+                            "parameters": 2048
+                        },
+                        {
+                            "layer": "Layer_3",
+                            "input_units": 32,
+                            "output_units": 16,
+                            "parameters": 512
+                        }
+                    ]
+                },
+                "time_complexity": {
+                    "big_o": "O(e*b*ops)",
+                    "formula": "epochs * batch_size * operations_per_batch",
+                    "values": {
+                        "epochs": 50,
+                        "batch_size": 32,
+                        "operations_per_forward_pass": 3233,
+                        "total_estimated_operations": 5172800
+                    },
+                    "description": "Proportional to training iterations and model size"
+                }
+            }
+        },
+        {
+            "algorithm": "Test Algorithm",
+            "timestamp": "2026-04-15T21:45:17.933191",
+            "performance_metrics": {
+                "MSE": {
+                    "value": 0.1,
+                    "formula": "(1/n) * \u03a3(y_i - \u0177_i)\u00b2",
+                    "description": "Mean Squared Error - penalizes larger errors"
+                },
+                "MAE": {
+                    "value": 0.1,
+                    "formula": "(1/n) * \u03a3|y_i - \u0177_i|",
+                    "description": "Mean Absolute Error - average prediction error"
+                },
+                "R_squared": {
+                    "value": 0.5833333333333334,
+                    "value_range": "[0, 1]",
+                    "formula": "1 - (SS_res / SS_tot)",
+                    "description": "Coefficient of Determination - proportion of variance explained",
+                    "interpretation": "Moderate - Model explains 50-70% of variance"
+                }
+            },
+            "complexity_analysis": {
+                "space_complexity": {
+                    "big_o": "O(n*m)",
+                    "description": "Linear with input dimensions and hidden units",
+                    "total_parameters": 3217,
+                    "layer_breakdown": [
+                        {
+                            "layer": "Layer_0",
+                            "input_units": 9,
+                            "output_units": 9,
+                            "parameters": 81
+                        },
+                        {
+                            "layer": "Layer_1",
+                            "input_units": 9,
+                            "output_units": 64,
+                            "parameters": 576
+                        },
+                        {
+                            "layer": "Layer_2",
+                            "input_units": 64,
+                            "output_units": 32,
+                            "parameters": 2048
+                        },
+                        {
+                            "layer": "Layer_3",
+                            "input_units": 32,
+                            "output_units": 16,
+                            "parameters": 512
+                        }
+                    ]
+                },
+                "time_complexity": {
+                    "big_o": "O(e*b*ops)",
+                    "formula": "epochs * batch_size * operations_per_batch",
+                    "values": {
+                        "epochs": 50,
+                        "batch_size": 32,
+                        "operations_per_forward_pass": 3233,
+                        "total_estimated_operations": 5172800
+                    },
+                    "description": "Proportional to training iterations and model size"
+                }
+            }
+        }
+    ]
+}
