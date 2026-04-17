@@ -2,6 +2,8 @@
 Project name:
 Weather Condition Prediction Using Machine Learning Algorithms
 
+--------------------------------------------------------------------------------------------------------
+
 Description:
 Weather forecasting is essential for planning daily activities, agriculture, transportation, and
 disaster preparedness. Sudden weather changes, especially rainfall, can significantly impact
@@ -14,13 +16,14 @@ The system utilizes multiple machine learning algorithms to compare performance 
 the most effective model for predicting rainfall. Additionally, data visualization techniques are
 used to better understand feature relationships and model behavior.
 
+--------------------------------------------------------------------------------------------------------
+
 Authors: 
 Kent Louie
 Joshua Ganas
 Dan Philip Achas
 Gerald Boniel
 Joshua M. Esclamado
-
 """
 
 # ================================
