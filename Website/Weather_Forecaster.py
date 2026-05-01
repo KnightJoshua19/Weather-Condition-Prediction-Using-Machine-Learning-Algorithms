@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import subprocess
 import sys
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = "change-me"
@@ -40,6 +41,53 @@ def load_place_forecast():
             return json.load(f)
     except Exception:
         return {"places": []}
+
+
+def choose_background_asset(rain_prob):
+    if rain_prob is None:
+        return "☁️", url_for("static", filename="images/sky_cloudy.svg")
+    if rain_prob >= 0.75:
+        return "⛈️", url_for("static", filename="images/sky_rain.svg")
+    if rain_prob >= 0.4:
+        return "🌧️", url_for("static", filename="images/sky_cloudy.svg")
+    return "☀️", url_for("static", filename="images/sky_clear.svg")
+
+
+def build_weekly_forecast(rain_prob, weather):
+    base_temp = int(weather.get("temp") or 30)
+    humidity = int(weather.get("humidity") or 70)
+    forecasts = []
+    for i in range(7):
+        dt = datetime.now() + timedelta(days=i)
+        day = dt.strftime("%A") if i > 0 else "Today"
+        offset = ((i % 3) - 1) * 1.5
+        temp = max(20, base_temp + int(offset))
+        high = temp + 2
+        low = temp - 3
+        prob = rain_prob if rain_prob is not None else 0.45
+        prob = min(max(prob + (i - 3) * 0.04, 0), 1)
+        if prob >= 0.75:
+            condition = "Heavy Rain"
+            icon = "⛈️"
+        elif prob >= 0.45:
+            condition = "Showers"
+            icon = "🌧️"
+        elif prob >= 0.25:
+            condition = "Partly Cloudy"
+            icon = "🌤️"
+        else:
+            condition = "Sunny"
+            icon = "☀️"
+        forecasts.append({"day": day, "icon": icon, "condition": condition, "high": high, "low": low})
+    return forecasts
+
+
+def build_today_tomorrow(weather, rain_prob):
+    today_temp = int(weather.get("temp") or 30)
+    today_humidity = int(weather.get("humidity") or 70)
+    tomorrow_temp = max(20, today_temp + (1 if rain_prob is None or rain_prob < 0.5 else -1))
+    tomorrow_humidity = min(100, today_humidity + (8 if rain_prob is None or rain_prob >= 0.5 else -4))
+    return {"temp": today_temp, "humidity": today_humidity}, {"temp": tomorrow_temp, "humidity": tomorrow_humidity}
 
 
 def get_latest_weather_summary():
@@ -138,8 +186,22 @@ def index():
     # get latest weather summary (humidity, wind, temp)
     weather = get_latest_weather_summary()
     place_forecast = load_place_forecast().get('places', [])
+    weather_icon, background_image_url = choose_background_asset(rain_prob)
+    weekly_forecast = build_weekly_forecast(rain_prob, weather)
+    today, tomorrow = build_today_tomorrow(weather, rain_prob)
 
-    return render_template("index.html", images=available_images, rain_prob=rain_prob, weather=weather, place_forecast=place_forecast)
+    return render_template(
+        "index.html",
+        images=available_images,
+        rain_prob=rain_prob,
+        weather=weather,
+        place_forecast=place_forecast,
+        weather_icon=weather_icon,
+        background_image_url=background_image_url,
+        weekly_forecast=weekly_forecast,
+        today=today,
+        tomorrow=tomorrow,
+    )
 
 
 @app.route("/images/<path:filename>")

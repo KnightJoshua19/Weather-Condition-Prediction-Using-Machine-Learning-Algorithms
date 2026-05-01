@@ -9,113 +9,177 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <style>
     :root{
-      --color-dark:#2E5077; /* accent 10% */
-      --color-mid:#4DA1A9;  /* secondary 30% */
-      --color-light:#79D7BE; /* primary 60% */
-      --color-bg:#F6F4F0;   /* background */
+      --color-dark:#2E5077; /* accent */
+      --color-mid:#4DA1A9;
+      --color-light:#79D7BE;
+      --color-bg:#F6F4F0;
+      --card-radius:18px;
+      --panel-border: rgba(46,80,119,0.16);
     }
-    body { padding: 1.5rem; background: linear-gradient(180deg,var(--color-bg), #eef7f6); font-family: 'Lato', sans-serif; }
+    body { padding: 1.5rem; background: var(--color-bg); font-family: 'Lato', sans-serif; color: var(--color-dark); }
     .img-thumb { max-width: 100%; height: auto; border: 1px solid rgba(0,0,0,0.05); padding: 4px; background: #fff; }
-    .hero-card{ background: var(--color-light); border-radius:14px; color:#fff; box-shadow:0 12px 30px rgba(0,0,0,0.08); padding:28px 14px; }
-    .icon-circle{ width:128px;height:128px;border-radius:64px;background:var(--color-mid);display:inline-flex;align-items:center;justify-content:center;margin:12px auto;}
-    .hero-title{ font-size:48px; margin-top:8px; color:var(--color-bg); font-family: 'Playfair Display', serif; font-weight:700 }
-    .hero-sub{ color:var(--color-bg); margin-top:6px; opacity:0.95 }
-    .metrics-bar{ position:relative;height:28px;border-radius:12px; overflow:visible;margin:18px auto 0; width:78%; box-shadow: inset 0 2px 6px rgba(0,0,0,0.06); }
-    .bar-seg{ height:28px; display:inline-block; float:left }
-    .seg-60{ width:60%; background:var(--color-light); }
-    .seg-30{ width:30%; background:var(--color-mid); }
-    .seg-10{ width:10%; background:var(--color-dark); }
-    .marker{ position:absolute; top:-14px; width:28px; height:28px; background:var(--color-dark); border-radius:50%; border:3px solid var(--color-bg); box-shadow:0 6px 14px rgba(0,0,0,0.12); display:flex; align-items:center; justify-content:center; color:var(--color-bg); font-weight:700 }
-    .marker::after{ content: attr(data-percent) '%'; font-size:10px; }
-    .info-card{ background:rgba(255,255,255,0.12); border-radius:12px; padding:18px; text-align:center; min-height:86px }
-    .info-icon{ font-size:20px; opacity:0.95 }
-    .info-label{ font-size:12px; opacity:0.9 }
-    .info-value{ font-size:20px; margin-top:8px; font-weight:700 }
-    .btn-outline-dark{ color:var(--color-dark); border-color: rgba(0,0,0,0.08); background:transparent }
-    .btn-outline-dark:hover{ background:rgba(46,80,119,0.06) }
-    @media(max-width:768px){ .hero-title{ font-size:32px } .metrics-bar{ width:100% } .marker{ top:-12px; left:calc(var(--mobile-left,50%) - 14px) } }
+    .dashboard-grid{ display:grid; gap:1.5rem; }
+    .panel{ background:#fff; border:1px solid var(--panel-border); border-radius:var(--card-radius); box-shadow:0 14px 32px rgba(46,80,119,0.08); overflow:hidden; }
+    .panel.weather-panel{ min-height:340px; position:relative; color:#fff; background-size:cover; background-position:center; }
+    .panel.weather-panel::before{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(46,80,119,0.24), rgba(46,80,119,0.52)); }
+    .panel-overlay{ position:absolute; inset:0; background:rgba(46,80,119,0.24); }
+    .panel-content{ position:relative; padding:2rem; z-index:1; }
+    .weather-icon{ font-size:56px; line-height:1; margin-bottom:8px; }
+    .weather-label{ font-size:14px; opacity:0.9; text-transform:uppercase; letter-spacing:0.12em; }
+    .weather-temp{ font-size:40px; font-weight:700; margin-top:6px; }
+    .hero-title{ font-size:42px; margin-top:12px; font-family: 'Playfair Display', serif; font-weight:700; color:#fff; }
+    .hero-sub{ color:#F6F4F0; opacity:0.95; margin-top:0.5rem; }
+    .bordered-card{ background:#fff; border:1px solid var(--panel-border); border-radius:var(--card-radius); }
+    .panel-header{ padding:1.5rem 1.75rem 0.5rem; }
+    .panel-header h5{ margin-bottom:0.35rem; color:var(--color-dark); }
+    .section-text{ color: rgba(46,80,119,0.75); margin-bottom:0; }
+    .forecast-row{ padding:1.25rem 1.5rem 1.5rem; }
+    .forecast-card{ background:var(--color-bg); border-radius:16px; padding:1.15rem 1rem; text-align:center; border:1px solid rgba(46,80,119,0.08); }
+    .day-label{ font-weight:700; color:var(--color-dark); margin-bottom:0.6rem; }
+    .forecast-icon{ font-size:28px; margin-bottom:0.4rem; }
+    .forecast-text{ font-size:14px; color:var(--color-dark); margin-bottom:0.4rem; }
+    .forecast-temp{ font-weight:700; color:var(--color-dark); }
+    .small-card{ min-height:170px; }
+    .small-card .card-body{ padding:1.35rem; }
+    .detail-row{ display:flex; justify-content:space-between; align-items:center; padding-top:0.75rem; color:var(--color-dark); font-weight:700; }
+    .section-table{ width:100%; border-collapse:separate; border-spacing:0; }
+    .section-table thead{ background:var(--color-bg); }
+    .section-table th, .section-table td{ padding:1rem 1rem; border-bottom:1px solid rgba(46,80,119,0.08); color:var(--color-dark); }
+    .section-table tr:last-child td{ border-bottom:none; }
+    .table-responsive{ padding:0 1.25rem 1.25rem; }
+    .forecast-card, .info-card, .small-card, .hero-card{ border:1px solid rgba(46,80,119,0.08); }
+    .info-card{ background:#fff; border-radius:14px; padding:18px; text-align:center; min-height:86px; }
+    .info-icon{ font-size:20px; opacity:0.95; }
+    .info-label{ font-size:12px; opacity:0.9; }
+    .info-value{ font-size:20px; margin-top:8px; font-weight:700; color:var(--color-dark); }
+    .btn-outline-dark{ color:var(--color-dark); border-color: rgba(46,80,119,0.18); background:transparent; }
+    .btn-outline-dark:hover{ background:rgba(46,80,119,0.08); }
+    .btn-primary{ background:var(--color-dark); border-color:var(--color-dark); }
+    .btn-primary:hover{ background:#1f3c5a; border-color:#1f3c5a; }
+    @media(max-width:992px){ .hero-title{ font-size:34px; } }
+    @media(max-width:768px){ .dashboard-grid{ gap:1rem; } .weather-temp{ font-size:32px; }.forecast-card{ padding:0.95rem; }}
   </style>
 </head>
 <body>
 <div class="container">
-  <div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-      <h1 style="font-family: 'Georgia', serif; color: #2E5077;">Weather Forecasting Assistant</h1>
-      <div style="color:#2E5077; margin-top:-8px;">rain prediction machine learning</div>
+      <h1 style="font-family: 'Georgia', serif; color: var(--color-dark);">Philippines Weather Forecast</h1>
+      <div style="color:var(--color-dark); margin-top:-8px;">Seven day outlook with today and tomorrow details</div>
     </div>
     <div>
-      <a class="btn btn-outline-dark" href="/run">Run Pipeline</a>
-      <a class="btn btn-outline-secondary" href="/">Refresh</a>
+      <a class="btn btn-primary" href="/run">Run Pipeline</a>
+      <a class="btn btn-outline-dark" href="/">Refresh</a>
     </div>
   </div>
 
-  <div class="card mb-4 hero-card">
-    <div class="card-body text-center">
-      <!-- big icon -->
-      <div class="icon-circle">
-        <svg width="84" height="84" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="10" fill="#2E5077"/>
-          <path d="M12 7v5l3 3" stroke="#F6F4F0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-
-      {% if rain_prob is not none %}
-        {% set pct = (rain_prob * 100)|round(0) %}
-        {% if rain_prob >= 0.5 %}
-          <h2 class="hero-title">Rain Expected</h2>
-        {% else %}
-          <h2 class="hero-title">No Rain</h2>
-        {% endif %}
-        <div class="hero-sub">Confidence: <strong>{{ pct }}%</strong></div>
-      {% else %}
-        <h2 class="hero-title">No Prediction</h2>
-        <div class="hero-sub">No probability available</div>
-      {% endif %}
-
-      <div class="mt-4 metrics-bar">
-        <div class="bar-seg seg-60"></div>
-        <div class="bar-seg seg-30"></div>
-        <div class="bar-seg seg-10"></div>
-        {% if rain_prob is not none %}
-          <div class="marker" data-percent="{{ (rain_prob*100)|round(0) }}" style="left: calc({{ (rain_prob*100)|round(2) }}% - 14px);"></div>
-        {% endif %}
-      </div>
-
-      <div class="row mt-4 text-white">
-        <div class="col-md-4 mb-2">
-          <div class="info-card">
-            <div class="info-icon">💧</div>
-            <div class="info-label">Humidity</div>
-            <div class="info-value">{{ weather.humidity if weather.humidity is not none else '—' }}%</div>
+  <div class="dashboard-grid">
+    <section class="panel weather-panel" style="background-image: url('{{ background_image_url }}');">
+      <div class="panel-overlay"></div>
+      <div class="panel-content">
+        <div class="d-flex justify-content-between align-items-start flex-column flex-md-row">
+          <div>
+            {% if rain_prob is not none %}
+              {% set pct = (rain_prob * 100)|round(0) %}
+              {% if rain_prob >= 0.5 %}
+                <h2 class="hero-title">Rain Expected</h2>
+              {% else %}
+                <h2 class="hero-title">No Rain</h2>
+              {% endif %}
+              <div class="hero-sub">Confidence: <strong>{{ pct }}%</strong></div>
+            {% else %}
+              <h2 class="hero-title">No Prediction</h2>
+              <div class="hero-sub">No probability available</div>
+            {% endif %}
+          </div>
+          <div class="text-md-end mt-4 mt-md-0">
+            <div class="weather-icon">{{ weather_icon }}</div>
+            <div class="weather-label">Philippines</div>
+            <div class="weather-temp">{{ weather.temp if weather.temp is not none else '—' }}°C</div>
           </div>
         </div>
-        <div class="col-md-4 mb-2">
-          <div class="info-card">
-            <div class="info-icon">💨</div>
-            <div class="info-label">Wind Speed</div>
-            <div class="info-value">{{ weather.wind if weather.wind is not none else '—' }} km/h</div>
+
+        <div class="row mt-4">
+          <div class="col-md-4 mb-3">
+            <div class="info-card bordered-card">
+              <div class="info-icon">💧</div>
+              <div class="info-label">Humidity</div>
+              <div class="info-value">{{ weather.humidity if weather.humidity is not none else '—' }}%</div>
+            </div>
           </div>
-        </div>
-        <div class="col-md-4 mb-2">
-          <div class="info-card">
-            <div class="info-icon">🌡️</div>
-            <div class="info-label">Temperature</div>
-            <div class="info-value">{{ weather.temp if weather.temp is not none else '—' }}°C</div>
+          <div class="col-md-4 mb-3">
+            <div class="info-card bordered-card">
+              <div class="info-icon">💨</div>
+              <div class="info-label">Wind Speed</div>
+              <div class="info-value">{{ weather.wind if weather.wind is not none else '—' }} km/h</div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="info-card bordered-card">
+              <div class="info-icon">🌡️</div>
+              <div class="info-label">Temperature</div>
+              <div class="info-value">{{ weather.temp if weather.temp is not none else '—' }}°C</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <hr>
-  <div class="row">
-    <div class="col-12">
-      <h5 style="color:var(--color-dark)">Place Forecast Dashboard</h5>
-      <p>Latest per-location rain predictions and confidence percentages from the model.</p>
+    <section class="panel forecast-panel">
+      <div class="panel-header">
+        <h5>Weekly Forecast</h5>
+        <p class="section-text">Philippines outlook for the next seven days.</p>
+      </div>
+      <div class="forecast-row row gx-3 gy-3">
+        {% for day in weekly_forecast %}
+        <div class="col-6 col-xl-3">
+          <div class="forecast-card">
+            <div class="day-label">{{ day.day }}</div>
+            <div class="forecast-icon">{{ day.icon }}</div>
+            <div class="forecast-text">{{ day.condition }}</div>
+            <div class="forecast-temp">{{ day.high }}° / {{ day.low }}°</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="panel tomorrow-panel">
+      <div class="panel-header">
+        <h5>Today & Tomorrow</h5>
+        <p class="section-text">Temperature and humidity comparison for the next 24 hours.</p>
+      </div>
+      <div class="forecast-row row gx-3 gy-3 p-3">
+        <div class="col-md-6">
+          <div class="card small-card bordered-card">
+            <div class="card-body">
+              <h6>Today</h6>
+              <div class="detail-row"><span>Temp</span><strong>{{ today.temp }}°C</strong></div>
+              <div class="detail-row"><span>Humidity</span><strong>{{ today.humidity }}%</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card small-card bordered-card">
+            <div class="card-body">
+              <h6>Tomorrow</h6>
+              <div class="detail-row"><span>Temp</span><strong>{{ tomorrow.temp }}°C</strong></div>
+              <div class="detail-row"><span>Humidity</span><strong>{{ tomorrow.humidity }}%</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel place-panel">
+      <div class="panel-header">
+        <h5>Place Forecast Confidence</h5>
+        <p class="section-text">Rain prediction confidence by location from the Decision Tree model.</p>
+      </div>
       {% if place_forecast %}
       <div class="table-responsive">
-        <table class="table table-borderless align-middle" style="background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.08);">
-          <thead class="table-light">
+        <table class="table table-borderless align-middle section-table">
+          <thead>
             <tr>
               <th>Location</th>
               <th>Prediction</th>
@@ -125,12 +189,12 @@
           </thead>
           <tbody>
             {% for place in place_forecast %}
-              <tr>
-                <td>{{ place.Location }}</td>
-                <td><span class="badge {{ 'bg-primary' if place.rain_prediction=='Rain' else 'bg-success' }}">{{ place.rain_prediction }}</span></td>
-                <td>{{ place.confidence_pct }}%</td>
-                <td>{{ place.total }}</td>
-              </tr>
+            <tr>
+              <td>{{ place.Location }}</td>
+              <td><span class="badge {{ 'bg-primary' if place.rain_prediction=='Rain' else 'bg-success' }}">{{ place.rain_prediction }}</span></td>
+              <td>{{ place.confidence_pct }}%</td>
+              <td>{{ place.total }}</td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>
@@ -138,7 +202,7 @@
       {% else %}
       <div class="alert alert-info">Place forecast data is not yet available. Run the pipeline to generate predictions.</div>
       {% endif %}
-    </div>
+    </section>
   </div>
 </div>
 
