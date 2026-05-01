@@ -2,7 +2,7 @@
     "algorithms": [
         {
             "algorithm": "Logistic Regression",
-            "timestamp": "2026-05-01T17:39:12.463272",
+            "timestamp": "2026-05-01T18:36:44.700388",
             "performance_metrics": {
                 "accuracy": {
                     "value": 0.8416398713826366,
@@ -38,7 +38,7 @@
         },
         {
             "algorithm": "Decision Tree",
-            "timestamp": "2026-05-01T17:39:12.481245",
+            "timestamp": "2026-05-01T18:36:44.716386",
             "performance_metrics": {
                 "accuracy": {
                     "value": 0.7803959003215434,
@@ -74,7 +74,115 @@
         },
         {
             "algorithm": "Random Forest",
-            "timestamp": "2026-05-01T17:39:12.836244",
+            "timestamp": "2026-05-01T18:36:45.084420",
+            "performance_metrics": {
+                "accuracy": {
+                    "value": 0.8545518488745981,
+                    "description": "Classification accuracy - percentage of correct predictions",
+                    "value_range": "[0, 1]"
+                },
+                "precision": {
+                    "value": 0.8463881259449454,
+                    "description": "Weighted average precision across all classes",
+                    "value_range": "[0, 1]"
+                },
+                "recall": {
+                    "value": 0.8545518488745981,
+                    "description": "Weighted average recall across all classes",
+                    "value_range": "[0, 1]"
+                },
+                "f1_score": {
+                    "value": 0.8443502445508124,
+                    "description": "Weighted average F1-score across all classes",
+                    "value_range": "[0, 1]"
+                }
+            },
+            "confusion_matrix": [
+                [
+                    14677,
+                    755
+                ],
+                [
+                    2140,
+                    2332
+                ]
+            ]
+        },
+        {
+            "algorithm": "Logistic Regression",
+            "timestamp": "2026-05-01T18:36:45.098420",
+            "performance_metrics": {
+                "accuracy": {
+                    "value": 0.8416398713826366,
+                    "description": "Classification accuracy - percentage of correct predictions",
+                    "value_range": "[0, 1]"
+                },
+                "precision": {
+                    "value": 0.8312070839813025,
+                    "description": "Weighted average precision across all classes",
+                    "value_range": "[0, 1]"
+                },
+                "recall": {
+                    "value": 0.8416398713826366,
+                    "description": "Weighted average recall across all classes",
+                    "value_range": "[0, 1]"
+                },
+                "f1_score": {
+                    "value": 0.83111933371011,
+                    "description": "Weighted average F1-score across all classes",
+                    "value_range": "[0, 1]"
+                }
+            },
+            "confusion_matrix": [
+                [
+                    14519,
+                    913
+                ],
+                [
+                    2239,
+                    2233
+                ]
+            ]
+        },
+        {
+            "algorithm": "Decision Tree",
+            "timestamp": "2026-05-01T18:36:45.116419",
+            "performance_metrics": {
+                "accuracy": {
+                    "value": 0.7803959003215434,
+                    "description": "Classification accuracy - percentage of correct predictions",
+                    "value_range": "[0, 1]"
+                },
+                "precision": {
+                    "value": 0.7857268673512072,
+                    "description": "Weighted average precision across all classes",
+                    "value_range": "[0, 1]"
+                },
+                "recall": {
+                    "value": 0.7803959003215434,
+                    "description": "Weighted average recall across all classes",
+                    "value_range": "[0, 1]"
+                },
+                "f1_score": {
+                    "value": 0.7828737344019856,
+                    "description": "Weighted average F1-score across all classes",
+                    "value_range": "[0, 1]"
+                }
+            },
+            "confusion_matrix": [
+                [
+                    13097,
+                    2335
+                ],
+                [
+                    2036,
+                    2436
+                ]
+            ]
+        },
+        {
+            "algorithm": "Random Forest",
+            "timestamp": "2026-05-01T18:36:45.481415",
             "performance_metrics": {
                 "accuracy": {
                     "value": 0.8545518488745981,

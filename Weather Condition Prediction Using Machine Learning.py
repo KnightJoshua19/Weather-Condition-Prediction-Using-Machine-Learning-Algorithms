@@ -49,18 +49,40 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 # ================================
 # 2. LOAD DATASET
 # ================================
-DATA_PATH = Path(__file__).resolve().parent / "Weather Training Data.csv"
+DATA_DIR = Path(__file__).resolve().parent / "Weather Datasets"
+Dataset_1 = DATA_DIR / "Weather Training Data.csv"
+Dataset_2 = DATA_DIR / "Weather Reading from Major Cities Around the World.csv"
 
+if Dataset_1.exists():
+    data_file = Dataset_1
+else:
+    csvs = list(DATA_DIR.glob("*.csv")) if DATA_DIR.exists() else []
+    excels = list(DATA_DIR.glob("*.xls*")) if DATA_DIR.exists() else []
+    if csvs:
+        data_file = csvs[0]
+    elif excels:
+        data_file = excels[0]
+    else:
+        raise FileNotFoundError(f"No CSV or Excel dataset found in {DATA_DIR}")
 
-raw_df = pd.read_csv(DATA_PATH)
+if data_file.suffix.lower() in [".xls", ".xlsx"]:
+    raw_df = pd.read_excel(data_file)
+else:
+    raw_df = pd.read_csv(data_file)
 preprocessed_df = raw_df.copy()
+print(f"Loaded dataset: {data_file}")
 
 
 # ================================
 # 3. DATA PREPROCESSING
 # ================================
 
-
+# Merge datasets to include city information (if needed)
+cities_df = pd.read_csv(Dataset_2)
+if "Location" in preprocessed_df.columns and "City" in cities_df.columns:
+    preprocessed_df = preprocessed_df.merge(cities_df[["City", "Latitude", "Longitude"]], left_on="Location", right_on="City", how="left")
+    preprocessed_df = preprocessed_df.drop(columns=["City"], errors="ignore")
+    
 # Drop columns that are not useful for modeling
 non_feature_columns = ["row ID"]
 preprocessed_df = preprocessed_df.drop(columns=non_feature_columns, errors="ignore")
@@ -104,7 +126,7 @@ df = preprocessed_df.copy()
 # ================================
 
 
-sns.set(style="whitegrid")
+sns.set_theme(style="darkgrid")
 
 
 plt.figure(figsize=(8, 5))
@@ -149,16 +171,16 @@ X_train, X_test, y_train, y_test = train_test_split(
 # ================================
 
 
-lr = LogisticRegression(max_iter=1000)
-lr.fit(X_train, y_train)
+Logistic_Regression_Algorithm = LogisticRegression(max_iter=1000)
+Logistic_Regression_Algorithm.fit(X_train, y_train)
 
 
-rt = DecisionTreeClassifier(random_state=42)
-rt.fit(X_train, y_train)
+Decision_Tree_Algorithm = DecisionTreeClassifier(random_state=42)
+Decision_Tree_Algorithm.fit(X_train, y_train)
 
 
-rf = RandomForestClassifier(random_state=42)
-rf.fit(X_train, y_train)
+Random_Forest_Algorithm = RandomForestClassifier(random_state=42)
+Random_Forest_Algorithm.fit(X_train, y_train)
 
 
 # ================================
@@ -192,13 +214,13 @@ def evaluate_model(model, name):
 
 
 results = [
-    evaluate_model(lr, "Logistic Regression"),
-    evaluate_model(rt, "Decision Tree"),
-    evaluate_model(rf, "Random Forest"),
+    evaluate_model(Logistic_Regression_Algorithm, "Logistic Regression"),
+    evaluate_model(Decision_Tree_Algorithm, "Decision Tree"),
+    evaluate_model(Random_Forest_Algorithm, "Random Forest"),
 ]
 
 
-feature_importances = pd.Series(rf.feature_importances_, index=X.columns).sort_values(ascending=False)
+feature_importances = pd.Series(Random_Forest_Algorithm.feature_importances_, index=X.columns).sort_values(ascending=False)
 plt.figure(figsize=(10, 6))
 sns.barplot(x=feature_importances.values, y=feature_importances.index)
 plt.title("Random Forest Feature Importances")
@@ -287,3 +309,128 @@ with open(json_path, 'w') as f:
     json.dump(metrics_output, f, indent=4)
 
 print(f"\n✓ Metrics exported to algorithm_metrics.json")
+# ================================
+# 9. EXPORT METRICS TO JSON (append across runs)
+# ================================
+
+# Prepare metrics for JSON export
+algorithms_data = []
+
+for result in results:
+    # Parse the classification report to extract metrics
+    report_dict = classification_report(y_test, result['model'].predict(X_test), output_dict=True)
+
+    algorithm_entry = {
+        "algorithm": result['name'],
+        "timestamp": datetime.now().isoformat(),
+        "performance_metrics": {
+            "accuracy": {
+                "value": float(result['accuracy']),
+                "description": "Classification accuracy - percentage of correct predictions",
+                "value_range": "[0, 1]"
+            },
+            "precision": {
+                "value": float(report_dict['weighted avg']['precision']),
+                "description": "Weighted average precision across all classes",
+                "value_range": "[0, 1]"
+            },
+            "recall": {
+                "value": float(report_dict['weighted avg']['recall']),
+                "description": "Weighted average recall across all classes",
+                "value_range": "[0, 1]"
+            },
+            "f1_score": {
+                "value": float(report_dict['weighted avg']['f1-score']),
+                "description": "Weighted average F1-score across all classes",
+                "value_range": "[0, 1]"
+            }
+        },
+        "confusion_matrix": result['confusion_matrix'].tolist()
+    }
+    algorithms_data.append(algorithm_entry)
+
+# Path to metrics file
+json_path = Path(__file__).resolve().parent / "algorithm_metrics.json"
+
+# Load existing metrics if present, then append new entries
+if json_path.exists():
+    try:
+        with open(json_path, 'r') as f:
+            existing = json.load(f)
+            existing_algorithms = existing.get('algorithms', [])
+    except Exception:
+        existing_algorithms = []
+    existing_algorithms.extend(algorithms_data)
+    metrics_output = {"algorithms": existing_algorithms}
+else:
+    metrics_output = {"algorithms": algorithms_data}
+
+# Write updated metrics back to file
+with open(json_path, 'w') as f:
+    json.dump(metrics_output, f, indent=4)
+
+print(f"\n✓ Metrics appended to algorithm_metrics.json")
+
+
+# ================================
+# 10. PLOT METRICS OVER TIME (multi-line per metric)
+# ================================
+records = []
+for entry in metrics_output.get('algorithms', []):
+    try:
+        alg = entry.get('algorithm')
+        ts = entry.get('timestamp')
+        perf = entry.get('performance_metrics', {})
+        if alg is None or ts is None or not perf:
+            continue
+        records.append({
+            'algorithm': alg,
+            'timestamp': pd.to_datetime(ts),
+            'accuracy': float(perf.get('accuracy', {}).get('value', float('nan'))),
+            'precision': float(perf.get('precision', {}).get('value', float('nan'))),
+            'recall': float(perf.get('recall', {}).get('value', float('nan'))),
+            'f1_score': float(perf.get('f1_score', {}).get('value', float('nan'))),
+        })
+    except Exception:
+        continue
+
+df_metrics = pd.DataFrame(records)
+
+if not df_metrics.empty:
+    df_metrics = df_metrics.sort_values('timestamp')
+
+    metrics = ['accuracy', 'precision', 'recall', 'f1_score']
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharex=True)
+    axes = axes.flatten()
+
+    for ax, metric in zip(axes, metrics):
+        # Use seaborn lineplot for time-series (long-form data)
+        df_m = df_metrics[['timestamp', 'algorithm', metric]].dropna()
+        if df_m.empty:
+            ax.text(0.5, 0.5, f'No data for {metric}', ha='center')
+            ax.set_title(metric.title())
+            continue
+        sns.lineplot(
+            data=df_m,
+            x='timestamp',
+            y=metric,
+            hue='algorithm',
+            style='algorithm',
+            markers=True,
+            dashes=False,
+            ax=ax,
+            estimator=None,
+        )
+        ax.set_title(metric.replace('_', ' ').title())
+        ax.set_ylabel(metric.title())
+        ax.grid(True, linestyle='--', alpha=0.6)
+        ax.legend()
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    out_path = 'metrics_over_time.png'
+    plt.savefig(out_path)
+    plt.close()
+    print(f"Saved {out_path}")
+else:
+    print("No historical metrics available to plot.")
