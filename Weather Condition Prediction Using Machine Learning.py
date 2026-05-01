@@ -77,7 +77,7 @@ print(f"Loaded dataset: {data_file}")
 # 3. DATA PREPROCESSING
 # ================================
 
-# Merge datasets to include city information (if needed)
+# Include Weather Reading from Major Cities Around the World dataset to add latitude and longitude features based on location
 cities_df = pd.read_csv(Dataset_2)
 if "Location" in preprocessed_df.columns and "City" in cities_df.columns:
     preprocessed_df = preprocessed_df.merge(cities_df[["City", "Latitude", "Longitude"]], left_on="Location", right_on="City", how="left")
@@ -269,6 +269,13 @@ for result in results:
     # Parse the classification report to extract metrics
     report_dict = classification_report(y_test, result['model'].predict(X_test), output_dict=True)
     
+    # compute mean predicted probability for the positive class if available
+    try:
+        proba = result['model'].predict_proba(X_test)[:, 1]
+        mean_proba = float(proba.mean())
+    except Exception:
+        mean_proba = None
+
     algorithm_entry = {
         "algorithm": result['name'],
         "timestamp": datetime.now().isoformat(),
@@ -294,7 +301,8 @@ for result in results:
                 "value_range": "[0, 1]"
             }
         },
-        "confusion_matrix": result['confusion_matrix'].tolist()
+        "confusion_matrix": result['confusion_matrix'].tolist(),
+        "rain_probability": {"value": mean_proba, "description": "Mean predicted probability of rain on the test set"}
     }
     algorithms_data.append(algorithm_entry)
 
@@ -319,6 +327,12 @@ algorithms_data = []
 for result in results:
     # Parse the classification report to extract metrics
     report_dict = classification_report(y_test, result['model'].predict(X_test), output_dict=True)
+    # compute mean predicted probability for the positive class if available
+    try:
+        proba = result['model'].predict_proba(X_test)[:, 1]
+        mean_proba = float(proba.mean())
+    except Exception:
+        mean_proba = None
 
     algorithm_entry = {
         "algorithm": result['name'],
@@ -345,7 +359,8 @@ for result in results:
                 "value_range": "[0, 1]"
             }
         },
-        "confusion_matrix": result['confusion_matrix'].tolist()
+        "confusion_matrix": result['confusion_matrix'].tolist(),
+        "rain_probability": {"value": mean_proba, "description": "Mean predicted probability of rain on the test set"}
     }
     algorithms_data.append(algorithm_entry)
 

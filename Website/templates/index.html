@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Weather ML Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{
+      --color-dark:#2E5077; /* accent 10% */
+      --color-mid:#4DA1A9;  /* secondary 30% */
+      --color-light:#79D7BE; /* primary 60% */
+      --color-bg:#F6F4F0;   /* background */
+    }
+    body { padding: 1.5rem; background: linear-gradient(180deg,var(--color-bg), #eef7f6); font-family: 'Lato', sans-serif; }
+    .img-thumb { max-width: 100%; height: auto; border: 1px solid rgba(0,0,0,0.05); padding: 4px; background: #fff; }
+    .hero-card{ background: var(--color-light); border-radius:14px; color:#fff; box-shadow:0 12px 30px rgba(0,0,0,0.08); padding:28px 14px; }
+    .icon-circle{ width:128px;height:128px;border-radius:64px;background:var(--color-mid);display:inline-flex;align-items:center;justify-content:center;margin:12px auto;}
+    .hero-title{ font-size:48px; margin-top:8px; color:var(--color-bg); font-family: 'Playfair Display', serif; font-weight:700 }
+    .hero-sub{ color:var(--color-bg); margin-top:6px; opacity:0.95 }
+    .metrics-bar{ position:relative;height:28px;border-radius:12px; overflow:visible;margin:18px auto 0; width:78%; box-shadow: inset 0 2px 6px rgba(0,0,0,0.06); }
+    .bar-seg{ height:28px; display:inline-block; float:left }
+    .seg-60{ width:60%; background:var(--color-light); }
+    .seg-30{ width:30%; background:var(--color-mid); }
+    .seg-10{ width:10%; background:var(--color-dark); }
+    .marker{ position:absolute; top:-14px; width:28px; height:28px; background:var(--color-dark); border-radius:50%; border:3px solid var(--color-bg); box-shadow:0 6px 14px rgba(0,0,0,0.12); display:flex; align-items:center; justify-content:center; color:var(--color-bg); font-weight:700 }
+    .marker::after{ content: attr(data-percent) '%'; font-size:10px; }
+    .info-card{ background:rgba(255,255,255,0.12); border-radius:12px; padding:18px; text-align:center; min-height:86px }
+    .info-icon{ font-size:20px; opacity:0.95 }
+    .info-label{ font-size:12px; opacity:0.9 }
+    .info-value{ font-size:20px; margin-top:8px; font-weight:700 }
+    .btn-outline-dark{ color:var(--color-dark); border-color: rgba(0,0,0,0.08); background:transparent }
+    .btn-outline-dark:hover{ background:rgba(46,80,119,0.06) }
+    @media(max-width:768px){ .hero-title{ font-size:32px } .metrics-bar{ width:100% } .marker{ top:-12px; left:calc(var(--mobile-left,50%) - 14px) } }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 style="font-family: 'Georgia', serif; color: #2E5077;">Weather Forecasting Assistant</h1>
+      <div style="color:#2E5077; margin-top:-8px;">rain prediction machine learning</div>
+    </div>
+    <div>
+      <a class="btn btn-outline-dark" href="/run">Run Pipeline</a>
+      <a class="btn btn-outline-secondary" href="/">Refresh</a>
+    </div>
+  </div>
+
+    <div class="row mb-4">
+      <div class="col-md-8">
+        <h4 style="color:var(--color-dark)">Metrics Over Time</h4>
+        <canvas id="metricsChart" height="220" style="background:#fff; border-radius:8px; padding:8px;"></canvas>
+      </div>
+      <div class="col-md-4">
+        <h4 style="color:var(--color-dark)">Images</h4>
+        {% for img in images %}
+          <div class="mb-3">
+            <a href="/images/{{ img }}" target="_blank"><img src="/images/{{ img }}" class="img-thumb" alt="{{ img }}"></a>
+            <div class="small text-muted">{{ img }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  <div class="card mb-4 hero-card">
+    <div class="card-body text-center">
+      <!-- big icon -->
+      <div class="icon-circle">
+        <svg width="84" height="84" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" fill="#2E5077"/>
+          <path d="M12 7v5l3 3" stroke="#F6F4F0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      {% if rain_prob is not none %}
+        {% set pct = (rain_prob * 100)|round(0) %}
+        {% if rain_prob >= 0.5 %}
+          <h2 class="hero-title">Rain Expected</h2>
+        {% else %}
+          <h2 class="hero-title">No Rain</h2>
+        {% endif %}
+        <div class="hero-sub">Confidence: <strong>{{ pct }}%</strong></div>
+      {% else %}
+        <h2 class="hero-title">No Prediction</h2>
+        <div class="hero-sub">No probability available</div>
+      {% endif %}
+
+      <div class="mt-4 metrics-bar">
+        <div class="bar-seg seg-60"></div>
+        <div class="bar-seg seg-30"></div>
+        <div class="bar-seg seg-10"></div>
+        {% if rain_prob is not none %}
+          <div class="marker" data-percent="{{ (rain_prob*100)|round(0) }}" style="left: calc({{ (rain_prob*100)|round(2) }}% - 14px);"></div>
+        {% endif %}
+      </div>
+
+      <div class="row mt-4 text-white">
+        <div class="col-md-4 mb-2">
+          <div class="info-card">
+            <div class="info-icon">💧</div>
+            <div class="info-label">Humidity</div>
+            <div class="info-value">{{ weather.humidity if weather.humidity is not none else '—' }}%</div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-2">
+          <div class="info-card">
+            <div class="info-icon">💨</div>
+            <div class="info-label">Wind Speed</div>
+            <div class="info-value">{{ weather.wind if weather.wind is not none else '—' }} km/h</div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-2">
+          <div class="info-card">
+            <div class="info-icon">🌡️</div>
+            <div class="info-label">Temperature</div>
+            <div class="info-value">{{ weather.temp if weather.temp is not none else '—' }}°C</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+  <div class="row">
+    <div class="col-12">
+      <h5>Per-Algorithm Data</h5>
+      <p>Download per-algorithm JSON files:</p>
+      <ul>
+        {% for alg_file in [] %}{% endfor %}
+        {% for alg in ['logistic_regression', 'decision_tree', 'random_forest'] %}
+          <li><a href="/metrics/{{ alg }}_metrics.json">{{ alg }}_metrics.json</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+const chartData = {{ chart_data | safe }};
+
+// Build datasets for combined multi-metric view: we'll show one metric at a time with selector
+const metrics = Object.keys(chartData);
+const colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"];
+
+function buildDatasets(metric) {
+  const metricData = chartData[metric] || {};
+  const datasets = [];
+  let colorIdx = 0;
+  for (const alg in metricData) {
+    const points = metricData[alg];
+    const labels = points.map(p => new Date(p.ts).toLocaleString());
+    const data = points.map(p => p.v);
+    datasets.push({
+      label: alg,
+      data: data,
+      fill: false,
+      borderColor: colors[colorIdx % colors.length],
+      backgroundColor: colors[colorIdx % colors.length],
+      tension: 0.1,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    });
+    colorIdx += 1;
+  }
+  // Use unified labels (timestamps) by taking unique sorted timestamps across all algs
+  const allLabels = new Set();
+  for (const alg in metricData) metricData[alg].forEach(p => allLabels.add(new Date(p.ts).toLocaleString()));
+  const sortedLabels = Array.from(allLabels);
+  return { datasets, labels: sortedLabels };
+}
+
+const ctx = document.getElementById('metricsChart').getContext('2d');
+let currentMetric = metrics.length ? metrics[0] : 'accuracy';
+let chartConfig = buildDatasets(currentMetric);
+let metricsChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: chartConfig.labels,
+    datasets: chartConfig.datasets
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      title: { display: true, text: currentMetric.replace('_',' ').toUpperCase() }
+    },
+    scales: { x: { display: true }, y: { beginAtZero: true, max: 1 } }
+  }
+});
+
+// Add metric selector above chart
+const sel = document.createElement('select');
+sel.className = 'form-select mb-2';
+sel.style.width = '250px';
+metrics.forEach(m => { const o = document.createElement('option'); o.value = m; o.text = m.replace('_',' ').toUpperCase(); sel.appendChild(o); });
+sel.value = currentMetric;
+metricsChart.canvas.parentNode.insertBefore(sel, metricsChart.canvas);
+sel.addEventListener('change', function() {
+  currentMetric = this.value;
+  const cfg = buildDatasets(currentMetric);
+  metricsChart.data.labels = cfg.labels;
+  metricsChart.data.datasets = cfg.datasets;
+  metricsChart.options.plugins.title.text = currentMetric.replace('_',' ').toUpperCase();
+  metricsChart.update();
+});
+
+</script>
+</body>
+</html>
