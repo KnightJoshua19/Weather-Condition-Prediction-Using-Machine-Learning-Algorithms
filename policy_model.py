@@ -48,7 +48,7 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 # ================================
 # 2. LOAD DATASET
 # ================================
-DATA_PATH = Path(__file__).resolve().parent / "Weather Test Data.csv"
+DATA_PATH = Path(__file__).resolve().parent / "Weather Training Data.csv"
 
 
 raw_df = pd.read_csv(DATA_PATH)
