@@ -44,6 +44,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.decomposition import PCA
 
 
 # ================================
@@ -158,11 +159,35 @@ y = df[target_column]
 
 
 scaler = StandardScaler()
+# keep original feature names for later reference
+original_feature_names = X.columns.tolist()
+
+# Standardize features
 X_scaled = scaler.fit_transform(X)
+
+# Dimensionality reduction: PCA (configurable)
+# Set APPLY_PCA = True to enable PCA and keep enough components to explain PCA_VARIANCE (or set PCA_N_COMPONENTS)
+APPLY_PCA = True
+PCA_VARIANCE = 0.95
+PCA_N_COMPONENTS = None  # set to int to force fixed number of components
+
+if APPLY_PCA:
+    if PCA_N_COMPONENTS:
+        pca = PCA(n_components=PCA_N_COMPONENTS, random_state=42)
+    else:
+        pca = PCA(n_components=PCA_VARIANCE, random_state=42)
+    X_reduced = pca.fit_transform(X_scaled)
+    X_final = X_reduced
+    feature_names = [f'PC{i+1}' for i in range(X_reduced.shape[1])]
+    explained = pca.explained_variance_ratio_.sum()
+    print(f"Applied PCA: reduced {X_scaled.shape[1]} -> {X_reduced.shape[1]} components, explained variance={explained:.3f}")
+else:
+    X_final = X_scaled
+    feature_names = original_feature_names
 
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y, test_size=0.2, random_state=42, stratify=y
+    X_final, y, test_size=0.2, random_state=42, stratify=y
 )
 
 
@@ -229,6 +254,19 @@ plt.ylabel("Feature")
 plt.tight_layout()
 plt.savefig("feature_importance.png")
 plt.close()
+# If PCA was applied, also save component importances with PC labels
+try:
+    fi = pd.Series(Random_Forest_Algorithm.feature_importances_, index=feature_names).sort_values(ascending=False)
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x=fi.values, y=fi.index)
+    plt.title("Random Forest Feature Importances")
+    plt.xlabel("Importance")
+    plt.ylabel("Feature")
+    plt.tight_layout()
+    plt.savefig("feature_importance.png")
+    plt.close()
+except Exception:
+    pass
 
 
 print("\nSaved visualizations: distribution.png, correlation_heatmap.png, logistic_regression_confusion_matrix.png, decision_tree_confusion_matrix.png, random_forest_confusion_matrix.png, feature_importance.png")

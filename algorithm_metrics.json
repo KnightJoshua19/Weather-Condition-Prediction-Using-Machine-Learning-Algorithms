@@ -2,7 +2,7 @@
     "algorithms": [
         {
             "algorithm": "Logistic Regression",
-            "timestamp": "2026-05-01T18:58:17.876406",
+            "timestamp": "2026-05-01T19:18:21.219332",
             "performance_metrics": {
                 "accuracy": {
                     "value": 0.8416398713826366,
@@ -34,11 +34,15 @@
                     2239,
                     2233
                 ]
-            ]
+            ],
+            "rain_probability": {
+                "value": 0.22777354786396656,
+                "description": "Mean predicted probability of rain on the test set"
+            }
         },
         {
             "algorithm": "Decision Tree",
-            "timestamp": "2026-05-01T18:58:17.891375",
+            "timestamp": "2026-05-01T19:18:21.239330",
             "performance_metrics": {
                 "accuracy": {
                     "value": 0.7803959003215434,
@@ -70,11 +74,15 @@
                     2036,
                     2436
                 ]
-            ]
+            ],
+            "rain_probability": {
+                "value": 0.23977233578318782,
+                "description": "Mean predicted probability of rain on the test set"
+            }
         },
         {
             "algorithm": "Random Forest",
-            "timestamp": "2026-05-01T18:58:18.283374",
+            "timestamp": "2026-05-01T19:18:21.960362",
             "performance_metrics": {
                 "accuracy": {
                     "value": 0.8545518488745981,
@@ -106,7 +114,11 @@
                     2140,
                     2332
                 ]
-            ]
+            ],
+            "rain_probability": {
+                "value": 0.2329713425193463,
+                "description": "Mean predicted probability of rain on the test set"
+            }
         }
     ]
 }
