@@ -19,6 +19,7 @@ IMAGES = [
     "decision_tree_confusion_matrix.png",
     "random_forest_confusion_matrix.png",
 ]
+PLACE_FORECAST_PATH = ROOT / "place_forecast.json"
 
 
 def load_metrics():
@@ -29,6 +30,16 @@ def load_metrics():
             return json.load(f)
     except Exception:
         return {"algorithms": []}
+
+
+def load_place_forecast():
+    if not PLACE_FORECAST_PATH.exists():
+        return {"places": []}
+    try:
+        with open(PLACE_FORECAST_PATH, "r") as f:
+            return json.load(f)
+    except Exception:
+        return {"places": []}
 
 
 def get_latest_weather_summary():
@@ -126,8 +137,9 @@ def index():
 
     # get latest weather summary (humidity, wind, temp)
     weather = get_latest_weather_summary()
+    place_forecast = load_place_forecast().get('places', [])
 
-    return render_template("index.html", chart_data=json.dumps(data), images=available_images, rain_prob=rain_prob, weather=weather)
+    return render_template("index.html", images=available_images, rain_prob=rain_prob, weather=weather, place_forecast=place_forecast)
 
 
 @app.route("/images/<path:filename>")

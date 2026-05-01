@@ -38,8 +38,6 @@ matplotlib.use('Agg')  # Use non-interactive backend to prevent display issues
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.tree import DecisionTreeClassifier
@@ -196,16 +194,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 # ================================
 
 
-Logistic_Regression_Algorithm = LogisticRegression(max_iter=1000)
-Logistic_Regression_Algorithm.fit(X_train, y_train)
-
-
 Decision_Tree_Algorithm = DecisionTreeClassifier(random_state=42)
 Decision_Tree_Algorithm.fit(X_train, y_train)
-
-
-Random_Forest_Algorithm = RandomForestClassifier(random_state=42)
-Random_Forest_Algorithm.fit(X_train, y_train)
 
 
 # ================================
@@ -239,16 +229,14 @@ def evaluate_model(model, name):
 
 
 results = [
-    evaluate_model(Logistic_Regression_Algorithm, "Logistic Regression"),
     evaluate_model(Decision_Tree_Algorithm, "Decision Tree"),
-    evaluate_model(Random_Forest_Algorithm, "Random Forest"),
 ]
 
 
-feature_importances = pd.Series(Random_Forest_Algorithm.feature_importances_, index=X.columns).sort_values(ascending=False)
+feature_importances = pd.Series(Decision_Tree_Algorithm.feature_importances_, index=X.columns).sort_values(ascending=False)
 plt.figure(figsize=(10, 6))
 sns.barplot(x=feature_importances.values, y=feature_importances.index)
-plt.title("Random Forest Feature Importances")
+plt.title("Decision Tree Feature Importances")
 plt.xlabel("Importance")
 plt.ylabel("Feature")
 plt.tight_layout()
@@ -256,10 +244,10 @@ plt.savefig("feature_importance.png")
 plt.close()
 # If PCA was applied, also save component importances with PC labels
 try:
-    fi = pd.Series(Random_Forest_Algorithm.feature_importances_, index=feature_names).sort_values(ascending=False)
+    fi = pd.Series(Decision_Tree_Algorithm.feature_importances_, index=feature_names).sort_values(ascending=False)
     plt.figure(figsize=(10, 6))
     sns.barplot(x=fi.values, y=fi.index)
-    plt.title("Random Forest Feature Importances")
+    plt.title("Decision Tree Feature Importances")
     plt.xlabel("Importance")
     plt.ylabel("Feature")
     plt.tight_layout()
@@ -354,75 +342,7 @@ json_path = Path(__file__).resolve().parent / "algorithm_metrics.json"
 with open(json_path, 'w') as f:
     json.dump(metrics_output, f, indent=4)
 
-print(f"\n✓ Metrics exported to algorithm_metrics.json")
-# ================================
-# 9. EXPORT METRICS TO JSON (append across runs)
-# ================================
-
-# Prepare metrics for JSON export
-algorithms_data = []
-
-for result in results:
-    # Parse the classification report to extract metrics
-    report_dict = classification_report(y_test, result['model'].predict(X_test), output_dict=True)
-    # compute mean predicted probability for the positive class if available
-    try:
-        proba = result['model'].predict_proba(X_test)[:, 1]
-        mean_proba = float(proba.mean())
-    except Exception:
-        mean_proba = None
-
-    algorithm_entry = {
-        "algorithm": result['name'],
-        "timestamp": datetime.now().isoformat(),
-        "performance_metrics": {
-            "accuracy": {
-                "value": float(result['accuracy']),
-                "description": "Classification accuracy - percentage of correct predictions",
-                "value_range": "[0, 1]"
-            },
-            "precision": {
-                "value": float(report_dict['weighted avg']['precision']),
-                "description": "Weighted average precision across all classes",
-                "value_range": "[0, 1]"
-            },
-            "recall": {
-                "value": float(report_dict['weighted avg']['recall']),
-                "description": "Weighted average recall across all classes",
-                "value_range": "[0, 1]"
-            },
-            "f1_score": {
-                "value": float(report_dict['weighted avg']['f1-score']),
-                "description": "Weighted average F1-score across all classes",
-                "value_range": "[0, 1]"
-            }
-        },
-        "confusion_matrix": result['confusion_matrix'].tolist(),
-        "rain_probability": {"value": mean_proba, "description": "Mean predicted probability of rain on the test set"}
-    }
-    algorithms_data.append(algorithm_entry)
-
-# Path to metrics file
-json_path = Path(__file__).resolve().parent / "algorithm_metrics.json"
-
-# Load existing metrics if present, then append new entries
-if json_path.exists():
-    try:
-        with open(json_path, 'r') as f:
-            existing = json.load(f)
-            existing_algorithms = existing.get('algorithms', [])
-    except Exception:
-        existing_algorithms = []
-    existing_algorithms.extend(algorithms_data)
-    metrics_output = {"algorithms": existing_algorithms}
-else:
-    metrics_output = {"algorithms": algorithms_data}
-
-# Write updated metrics back to file
-with open(json_path, 'w') as f:
-    json.dump(metrics_output, f, indent=4)
-
-print(f"\n✓ Metrics appended to algorithm_metrics.json")
+print(f"\n✓ Metrics written to algorithm_metrics.json")
 
 # Also write per-algorithm metric files into a `metrics/` folder (one file per algorithm)
 metrics_dir = Path(__file__).resolve().parent / "metrics"
@@ -450,7 +370,34 @@ for entry in metrics_output.get('algorithms', []):
 
 
 # ================================
-# 10. PLOT METRICS OVER TIME (multi-line per metric)
+# 10. PLACE FORECAST SUMMARY
+# Generate per-location rain/no-rain forecast confidence using Decision Tree
+try:
+    proba = Decision_Tree_Algorithm.predict_proba(X_final)[:, 1]
+    place_summary = []
+    if 'Location' in raw_df.columns:
+        for location, group in raw_df.groupby('Location', dropna=False):
+            indices = group.index.tolist()
+            if not indices:
+                continue
+            location_probs = proba[indices]
+            confidence_pct = round(float(location_probs.mean()) * 100, 1)
+            place_summary.append({
+                'Location': str(location) if pd.notna(location) else 'Unknown',
+                'rain_prediction': 'Rain' if float(location_probs.mean()) >= 0.5 else 'No Rain',
+                'confidence_pct': confidence_pct,
+                'total': int(len(location_probs))
+            })
+    place_summary = sorted(place_summary, key=lambda x: (x['rain_prediction'] != 'Rain', -x['confidence_pct']))
+    with open(Path(__file__).resolve().parent / 'place_forecast.json', 'w') as f:
+        json.dump({'places': place_summary}, f, indent=4)
+    print(f"\n✓ Place forecast saved to place_forecast.json ({len(place_summary)} locations)")
+except Exception as e:
+    print(f"Failed to create place_forecast.json: {e}")
+
+
+# ================================
+# 11. PLOT METRICS OVER TIME (multi-line per metric)
 # ================================
 records = []
 for entry in metrics_output.get('algorithms', []):

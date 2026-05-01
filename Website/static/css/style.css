@@ -1,0 +1,50 @@
+/* Main site stylesheet for Weather Forecasting Assistant */
+:root{
+  --color-dark:#2E5077;
+  --color-mid:#4DA1A9;
+  --color-light:#79D7BE;
+  --color-bg:#F6F4F0;
+  --card-radius:14px;
+}
+
+body{
+  font-family: 'Lato', sans-serif;
+  background: linear-gradient(180deg,var(--color-bg), #eef7f6);
+  padding: 1.5rem;
+  color: #123;
+}
+
+.container{max-width:1100px}
+
+.hero-card{ background: var(--color-light); border-radius:var(--card-radius); color:#fff; box-shadow:0 14px 36px rgba(0,0,0,0.08); padding:28px 18px; }
+.icon-circle{ width:128px;height:128px;border-radius:64px;background:var(--color-mid);display:inline-flex;align-items:center;justify-content:center;margin:12px auto;}
+.hero-title{ font-size:48px; margin-top:8px; color:var(--color-bg); font-family: 'Playfair Display', serif; font-weight:700 }
+.hero-sub{ color:var(--color-bg); margin-top:6px; opacity:0.95 }
+
+.metrics-bar{ position:relative;height:28px;border-radius:12px; overflow:visible;margin:18px auto 0; width:78%; box-shadow: inset 0 2px 6px rgba(0,0,0,0.06); }
+.bar-seg{ height:28px; display:inline-block; float:left }
+.seg-60{ width:60%; background:var(--color-light); }
+.seg-30{ width:30%; background:var(--color-mid); }
+.seg-10{ width:10%; background:var(--color-dark); }
+
+.marker{ position:absolute; top:-14px; width:28px; height:28px; background:var(--color-dark); border-radius:50%; border:3px solid var(--color-bg); box-shadow:0 6px 14px rgba(0,0,0,0.12); display:flex; align-items:center; justify-content:center; color:var(--color-bg); font-weight:700; transition: left 600ms cubic-bezier(.2,.8,.2,1) }
+.marker .label{ position:absolute; top:36px; left:50%; transform:translateX(-50%); color:var(--color-dark); font-weight:700; background:#fff; padding:4px 8px; border-radius:10px; font-size:12px; box-shadow:0 6px 14px rgba(0,0,0,0.06)}
+
+.info-card{ background:rgba(255,255,255,0.12); border-radius:12px; padding:18px; text-align:center; min-height:86px; transition: transform 220ms, box-shadow 220ms }
+.info-card:hover{ transform: translateY(-6px); box-shadow:0 12px 28px rgba(0,0,0,0.08) }
+
+.info-icon{ font-size:20px; opacity:0.95 }
+.info-label{ font-size:12px; opacity:0.9 }
+.info-value{ font-size:20px; margin-top:8px; font-weight:700 }
+
+.btn-outline-dark{ color:var(--color-dark); border-color: rgba(0,0,0,0.08); background:transparent }
+.btn-outline-dark:hover{ background:rgba(46,80,119,0.06) }
+
+/* Chart container style */
+#metricsChart{ background:#fff; border-radius:10px; padding:8px; box-shadow:0 8px 16px rgba(0,0,0,0.04) }
+
+@media(max-width:768px){
+  .hero-title{ font-size:32px }
+  .metrics-bar{ width:100% }
+  .marker{ top:-12px }
+}
