@@ -1,205 +1,112 @@
 {
     "algorithms": [
         {
-            "algorithm": "Neural Network Policy Analyzer",
-            "timestamp": "2026-04-15T21:20:38.578054",
+            "algorithm": "Logistic Regression",
+            "timestamp": "2026-05-01T17:39:12.463272",
             "performance_metrics": {
-                "MSE": {
-                    "value": 0.026467203682393557,
-                    "formula": "(1/n) * \u03a3(y_i - \u0177_i)\u00b2",
-                    "description": "Mean Squared Error - penalizes larger errors"
+                "accuracy": {
+                    "value": 0.8416398713826366,
+                    "description": "Classification accuracy - percentage of correct predictions",
+                    "value_range": "[0, 1]"
                 },
-                "MAE": {
-                    "value": 0.026467203682393557,
-                    "formula": "(1/n) * \u03a3|y_i - \u0177_i|",
-                    "description": "Mean Absolute Error - average prediction error"
+                "precision": {
+                    "value": 0.8312070839813025,
+                    "description": "Weighted average precision across all classes",
+                    "value_range": "[0, 1]"
                 },
-                "R_squared": {
-                    "value": 0.8937935065625167,
-                    "value_range": "[0, 1]",
-                    "formula": "1 - (SS_res / SS_tot)",
-                    "description": "Coefficient of Determination - proportion of variance explained",
-                    "interpretation": "Good - Model explains 70-90% of variance"
+                "recall": {
+                    "value": 0.8416398713826366,
+                    "description": "Weighted average recall across all classes",
+                    "value_range": "[0, 1]"
+                },
+                "f1_score": {
+                    "value": 0.83111933371011,
+                    "description": "Weighted average F1-score across all classes",
+                    "value_range": "[0, 1]"
                 }
             },
-            "complexity_analysis": {
-                "space_complexity": {
-                    "big_o": "O(n*m)",
-                    "description": "Linear with input dimensions and hidden units",
-                    "total_parameters": 5892,
-                    "layer_breakdown": [
-                        {
-                            "layer": "Layer_0",
-                            "input_units": 34,
-                            "output_units": 34,
-                            "parameters": 1156
-                        },
-                        {
-                            "layer": "Layer_1",
-                            "input_units": 34,
-                            "output_units": 64,
-                            "parameters": 2176
-                        },
-                        {
-                            "layer": "Layer_2",
-                            "input_units": 64,
-                            "output_units": 32,
-                            "parameters": 2048
-                        },
-                        {
-                            "layer": "Layer_3",
-                            "input_units": 32,
-                            "output_units": 16,
-                            "parameters": 512
-                        }
-                    ]
-                },
-                "time_complexity": {
-                    "big_o": "O(e*b*ops)",
-                    "formula": "epochs * batch_size * operations_per_batch",
-                    "values": {
-                        "epochs": 50,
-                        "batch_size": 32,
-                        "operations_per_forward_pass": 5908,
-                        "total_estimated_operations": 9452800
-                    },
-                    "description": "Proportional to training iterations and model size"
-                }
-            }
+            "confusion_matrix": [
+                [
+                    14519,
+                    913
+                ],
+                [
+                    2239,
+                    2233
+                ]
+            ]
         },
         {
-            "algorithm": "Neural Network Policy Analyzer",
-            "timestamp": "2026-04-15T21:48:23.517026",
+            "algorithm": "Decision Tree",
+            "timestamp": "2026-05-01T17:39:12.481245",
             "performance_metrics": {
-                "MSE": {
-                    "value": 0.020713463751438434,
-                    "formula": "(1/n) * \u03a3(y_i - \u0177_i)\u00b2",
-                    "description": "Mean Squared Error - penalizes larger errors"
+                "accuracy": {
+                    "value": 0.7803959003215434,
+                    "description": "Classification accuracy - percentage of correct predictions",
+                    "value_range": "[0, 1]"
                 },
-                "MAE": {
-                    "value": 0.020713463751438434,
-                    "formula": "(1/n) * \u03a3|y_i - \u0177_i|",
-                    "description": "Mean Absolute Error - average prediction error"
+                "precision": {
+                    "value": 0.7857268673512072,
+                    "description": "Weighted average precision across all classes",
+                    "value_range": "[0, 1]"
                 },
-                "R_squared": {
-                    "value": 0.9168818747010999,
-                    "value_range": "[0, 1]",
-                    "formula": "1 - (SS_res / SS_tot)",
-                    "description": "Coefficient of Determination - proportion of variance explained",
-                    "interpretation": "Excellent - Model explains >90% of variance"
+                "recall": {
+                    "value": 0.7803959003215434,
+                    "description": "Weighted average recall across all classes",
+                    "value_range": "[0, 1]"
+                },
+                "f1_score": {
+                    "value": 0.7828737344019856,
+                    "description": "Weighted average F1-score across all classes",
+                    "value_range": "[0, 1]"
                 }
             },
-            "complexity_analysis": {
-                "space_complexity": {
-                    "big_o": "O(n*m)",
-                    "description": "Linear with input dimensions and hidden units",
-                    "total_parameters": 5892,
-                    "layer_breakdown": [
-                        {
-                            "layer": "Layer_0",
-                            "input_units": 34,
-                            "output_units": 34,
-                            "parameters": 1156
-                        },
-                        {
-                            "layer": "Layer_1",
-                            "input_units": 34,
-                            "output_units": 64,
-                            "parameters": 2176
-                        },
-                        {
-                            "layer": "Layer_2",
-                            "input_units": 64,
-                            "output_units": 32,
-                            "parameters": 2048
-                        },
-                        {
-                            "layer": "Layer_3",
-                            "input_units": 32,
-                            "output_units": 16,
-                            "parameters": 512
-                        }
-                    ]
-                },
-                "time_complexity": {
-                    "big_o": "O(e*b*ops)",
-                    "formula": "epochs * batch_size * operations_per_batch",
-                    "values": {
-                        "epochs": 50,
-                        "batch_size": 32,
-                        "operations_per_forward_pass": 5908,
-                        "total_estimated_operations": 9452800
-                    },
-                    "description": "Proportional to training iterations and model size"
-                }
-            }
+            "confusion_matrix": [
+                [
+                    13097,
+                    2335
+                ],
+                [
+                    2036,
+                    2436
+                ]
+            ]
         },
         {
-            "algorithm": "Neural Network Policy Analyzer",
-            "timestamp": "2026-04-15T21:52:32.383746",
+            "algorithm": "Random Forest",
+            "timestamp": "2026-05-01T17:39:12.836244",
             "performance_metrics": {
-                "MSE": {
-                    "value": 0.05868814729574223,
-                    "formula": "(1/n) * \u03a3(y_i - \u0177_i)\u00b2",
-                    "description": "Mean Squared Error - penalizes larger errors"
+                "accuracy": {
+                    "value": 0.8545518488745981,
+                    "description": "Classification accuracy - percentage of correct predictions",
+                    "value_range": "[0, 1]"
                 },
-                "MAE": {
-                    "value": 0.05868814729574223,
-                    "formula": "(1/n) * \u03a3|y_i - \u0177_i|",
-                    "description": "Mean Absolute Error - average prediction error"
+                "precision": {
+                    "value": 0.8463881259449454,
+                    "description": "Weighted average precision across all classes",
+                    "value_range": "[0, 1]"
                 },
-                "R_squared": {
-                    "value": 0.7644986449864499,
-                    "value_range": "[0, 1]",
-                    "formula": "1 - (SS_res / SS_tot)",
-                    "description": "Coefficient of Determination - proportion of variance explained",
-                    "interpretation": "Good - Model explains 70-90% of variance"
+                "recall": {
+                    "value": 0.8545518488745981,
+                    "description": "Weighted average recall across all classes",
+                    "value_range": "[0, 1]"
+                },
+                "f1_score": {
+                    "value": 0.8443502445508124,
+                    "description": "Weighted average F1-score across all classes",
+                    "value_range": "[0, 1]"
                 }
             },
-            "complexity_analysis": {
-                "space_complexity": {
-                    "big_o": "O(n*m)",
-                    "description": "Linear with input dimensions and hidden units",
-                    "total_parameters": 5892,
-                    "layer_breakdown": [
-                        {
-                            "layer": "Layer_0",
-                            "input_units": 34,
-                            "output_units": 34,
-                            "parameters": 1156
-                        },
-                        {
-                            "layer": "Layer_1",
-                            "input_units": 34,
-                            "output_units": 64,
-                            "parameters": 2176
-                        },
-                        {
-                            "layer": "Layer_2",
-                            "input_units": 64,
-                            "output_units": 32,
-                            "parameters": 2048
-                        },
-                        {
-                            "layer": "Layer_3",
-                            "input_units": 32,
-                            "output_units": 16,
-                            "parameters": 512
-                        }
-                    ]
-                },
-                "time_complexity": {
-                    "big_o": "O(e*b*ops)",
-                    "formula": "epochs * batch_size * operations_per_batch",
-                    "values": {
-                        "epochs": 50,
-                        "batch_size": 32,
-                        "operations_per_forward_pass": 5908,
-                        "total_estimated_operations": 9452800
-                    },
-                    "description": "Proportional to training iterations and model size"
-                }
-            }
+            "confusion_matrix": [
+                [
+                    14677,
+                    755
+                ],
+                [
+                    2140,
+                    2332
+                ]
+            ]
         }
     ]
 }

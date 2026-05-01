@@ -30,7 +30,8 @@ Joshua M. Esclamado
 # 1. IMPORT LIBRARIES
 # ================================
 from pathlib import Path
-
+import json
+from datetime import datetime
 
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend to prevent display issues
@@ -73,23 +74,17 @@ preprocessed_df = preprocessed_df.drop(columns=cols_to_drop, errors="ignore")
 print(f"Dropped columns with too many missing values: {cols_to_drop}\n")
 
 
-# Forward-fill remaining missing values, then fill any remaining numeric gaps with column mean
-preprocessed_df = preprocessed_df.ffill()
+# Fill remaining missing values using column mean (average) instead of forward fill
 for col in preprocessed_df.select_dtypes(include=["number"]).columns:
     if preprocessed_df[col].isna().any():
         preprocessed_df[col] = preprocessed_df[col].fillna(preprocessed_df[col].mean())
 
 
-# Convert target to binary and use RainToday as the label for this dataset
-if "RainTomorrow" in preprocessed_df.columns:
-    target_column = "RainTomorrow"
-else:
-    target_column = "RainToday"
-
+# Convert target to binary and use RainTomorrow as the label for this dataset
+target_column = "RainTomorrow"
 
 if preprocessed_df[target_column].dtype == object:
     preprocessed_df[target_column] = preprocessed_df[target_column].map({"Yes": 1, "No": 0})
-
 
 print(f"Using target column: {target_column}\n")
 
@@ -175,6 +170,7 @@ def evaluate_model(model, name):
     y_pred = model.predict(X_test)
     result = {
         "name": name,
+        "model": model,
         "accuracy": accuracy_score(y_test, y_pred),
         "report": classification_report(y_test, y_pred),
         "confusion_matrix": confusion_matrix(y_test, y_pred),
@@ -238,3 +234,56 @@ for result in results:
     print(f"Accuracy: {result['accuracy']:.4f}")
     print("Classification Report:\n", result["report"])
     print("Confusion Matrix:\n", result["confusion_matrix"])
+
+
+# ================================
+# 9. EXPORT METRICS TO JSON
+# ================================
+
+# Prepare metrics for JSON export
+algorithms_data = []
+
+for result in results:
+    # Parse the classification report to extract metrics
+    report_dict = classification_report(y_test, result['model'].predict(X_test), output_dict=True)
+    
+    algorithm_entry = {
+        "algorithm": result['name'],
+        "timestamp": datetime.now().isoformat(),
+        "performance_metrics": {
+            "accuracy": {
+                "value": float(result['accuracy']),
+                "description": "Classification accuracy - percentage of correct predictions",
+                "value_range": "[0, 1]"
+            },
+            "precision": {
+                "value": float(report_dict['weighted avg']['precision']),
+                "description": "Weighted average precision across all classes",
+                "value_range": "[0, 1]"
+            },
+            "recall": {
+                "value": float(report_dict['weighted avg']['recall']),
+                "description": "Weighted average recall across all classes",
+                "value_range": "[0, 1]"
+            },
+            "f1_score": {
+                "value": float(report_dict['weighted avg']['f1-score']),
+                "description": "Weighted average F1-score across all classes",
+                "value_range": "[0, 1]"
+            }
+        },
+        "confusion_matrix": result['confusion_matrix'].tolist()
+    }
+    algorithms_data.append(algorithm_entry)
+
+# Create metrics structure
+metrics_output = {
+    "algorithms": algorithms_data
+}
+
+# Export to JSON file
+json_path = Path(__file__).resolve().parent / "algorithm_metrics.json"
+with open(json_path, 'w') as f:
+    json.dump(metrics_output, f, indent=4)
+
+print(f"\n✓ Metrics exported to algorithm_metrics.json")
