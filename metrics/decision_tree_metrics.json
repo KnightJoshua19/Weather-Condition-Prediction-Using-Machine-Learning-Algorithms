@@ -1,0 +1,74 @@
+[
+    {
+        "algorithm": "Decision Tree",
+        "timestamp": "2026-05-01T18:46:14.015345",
+        "performance_metrics": {
+            "accuracy": {
+                "value": 0.7803959003215434,
+                "description": "Classification accuracy - percentage of correct predictions",
+                "value_range": "[0, 1]"
+            },
+            "precision": {
+                "value": 0.7857268673512072,
+                "description": "Weighted average precision across all classes",
+                "value_range": "[0, 1]"
+            },
+            "recall": {
+                "value": 0.7803959003215434,
+                "description": "Weighted average recall across all classes",
+                "value_range": "[0, 1]"
+            },
+            "f1_score": {
+                "value": 0.7828737344019856,
+                "description": "Weighted average F1-score across all classes",
+                "value_range": "[0, 1]"
+            }
+        },
+        "confusion_matrix": [
+            [
+                13097,
+                2335
+            ],
+            [
+                2036,
+                2436
+            ]
+        ]
+    },
+    {
+        "algorithm": "Decision Tree",
+        "timestamp": "2026-05-01T18:46:14.397374",
+        "performance_metrics": {
+            "accuracy": {
+                "value": 0.7803959003215434,
+                "description": "Classification accuracy - percentage of correct predictions",
+                "value_range": "[0, 1]"
+            },
+            "precision": {
+                "value": 0.7857268673512072,
+                "description": "Weighted average precision across all classes",
+                "value_range": "[0, 1]"
+            },
+            "recall": {
+                "value": 0.7803959003215434,
+                "description": "Weighted average recall across all classes",
+                "value_range": "[0, 1]"
+            },
+            "f1_score": {
+                "value": 0.7828737344019856,
+                "description": "Weighted average F1-score across all classes",
+                "value_range": "[0, 1]"
+            }
+        },
+        "confusion_matrix": [
+            [
+                13097,
+                2335
+            ],
+            [
+                2036,
+                2436
+            ]
+        ]
+    }
+]

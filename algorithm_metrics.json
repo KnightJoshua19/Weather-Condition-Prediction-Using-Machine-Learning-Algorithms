@@ -2,7 +2,7 @@
     "algorithms": [
         {
             "algorithm": "Logistic Regression",
-            "timestamp": "2026-05-01T18:36:44.700388",
+            "timestamp": "2026-05-01T18:46:13.998382",
             "performance_metrics": {
                 "accuracy": {
                     "value": 0.8416398713826366,
@@ -38,7 +38,7 @@
         },
         {
             "algorithm": "Decision Tree",
-            "timestamp": "2026-05-01T18:36:44.716386",
+            "timestamp": "2026-05-01T18:46:14.015345",
             "performance_metrics": {
                 "accuracy": {
                     "value": 0.7803959003215434,
@@ -74,7 +74,7 @@
         },
         {
             "algorithm": "Random Forest",
-            "timestamp": "2026-05-01T18:36:45.084420",
+            "timestamp": "2026-05-01T18:46:14.367382",
             "performance_metrics": {
                 "accuracy": {
                     "value": 0.8545518488745981,
@@ -110,7 +110,7 @@
         },
         {
             "algorithm": "Logistic Regression",
-            "timestamp": "2026-05-01T18:36:45.098420",
+            "timestamp": "2026-05-01T18:46:14.380384",
             "performance_metrics": {
                 "accuracy": {
                     "value": 0.8416398713826366,
@@ -146,7 +146,7 @@
         },
         {
             "algorithm": "Decision Tree",
-            "timestamp": "2026-05-01T18:36:45.116419",
+            "timestamp": "2026-05-01T18:46:14.397374",
             "performance_metrics": {
                 "accuracy": {
                     "value": 0.7803959003215434,
@@ -182,7 +182,7 @@
         },
         {
             "algorithm": "Random Forest",
-            "timestamp": "2026-05-01T18:36:45.481415",
+            "timestamp": "2026-05-01T18:46:14.755346",
             "performance_metrics": {
                 "accuracy": {
                     "value": 0.8545518488745981,

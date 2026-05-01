@@ -371,6 +371,30 @@ with open(json_path, 'w') as f:
 
 print(f"\n✓ Metrics appended to algorithm_metrics.json")
 
+# Also write per-algorithm metric files into a `metrics/` folder (one file per algorithm)
+metrics_dir = Path(__file__).resolve().parent / "metrics"
+metrics_dir.mkdir(parents=True, exist_ok=True)
+for entry in metrics_output.get('algorithms', []):
+    try:
+        alg = entry.get('algorithm')
+        if not alg:
+            continue
+        safe_name = alg.lower().replace(' ', '_')
+        alg_path = metrics_dir / f"{safe_name}_metrics.json"
+        if alg_path.exists():
+            try:
+                with open(alg_path, 'r') as f:
+                    existing_list = json.load(f)
+            except Exception:
+                existing_list = []
+        else:
+            existing_list = []
+        existing_list.append(entry)
+        with open(alg_path, 'w') as f:
+            json.dump(existing_list, f, indent=4)
+    except Exception:
+        continue
+
 
 # ================================
 # 10. PLOT METRICS OVER TIME (multi-line per metric)
@@ -421,6 +445,16 @@ if not df_metrics.empty:
             ax=ax,
             estimator=None,
         )
+        # Annotate each point with its numeric value
+        df_m_sorted = df_m.sort_values('timestamp')
+        for alg in df_m_sorted['algorithm'].unique():
+            subset = df_m_sorted[df_m_sorted['algorithm'] == alg]
+            for tx, ty in zip(subset['timestamp'], subset[metric]):
+                try:
+                    ax.text(tx, ty, f"{ty:.3f}", fontsize=7, va='bottom', ha='center', rotation=30)
+                except Exception:
+                    # If text placement fails for any point, continue
+                    continue
         ax.set_title(metric.replace('_', ' ').title())
         ax.set_ylabel(metric.title())
         ax.grid(True, linestyle='--', alpha=0.6)
