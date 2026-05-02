@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory, redirect, url_for, flash
+from flask import Flask, render_template, send_from_directory, url_for, jsonify
 from pathlib import Path
 import json
 import subprocess
@@ -11,6 +11,7 @@ app.secret_key = "change-me"
 ROOT = Path(__file__).resolve().parent.parent
 METRICS_PATH = ROOT / "algorithm_metrics.json"
 METRICS_DIR = ROOT / "metrics"
+FORECAST_PATH = ROOT / "weather_predictions.json"
 IMAGES = [
     "distribution.png",
     "correlation_heatmap.png",
@@ -43,14 +44,56 @@ def load_place_forecast():
         return {"places": []}
 
 
-def choose_background_asset(rain_prob):
-    if rain_prob is None:
-        return "☁️", url_for("static", filename="images/sky_cloudy.svg")
-    if rain_prob >= 0.75:
-        return "⛈️", url_for("static", filename="images/sky_rain.svg")
-    if rain_prob >= 0.4:
-        return "🌧️", url_for("static", filename="images/sky_cloudy.svg")
-    return "☀️", url_for("static", filename="images/sky_clear.svg")
+def choose_background_asset(predicted_main):
+    predicted_text = (predicted_main or "").lower()
+    if "rain" in predicted_text or "shower" in predicted_text or "storm" in predicted_text:
+        return "⛈️", "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=80"
+    if "cloud" in predicted_text or "overcast" in predicted_text:
+        return "☁️", "https://images.unsplash.com/photo-1499346030926-9a72daac6c63?auto=format&fit=crop&w=1400&q=80"
+    if "clear" in predicted_text or "sun" in predicted_text:
+        return "☀️", "https://images.unsplash.com/photo-1501975558161-3f0f7f7c5c1e?auto=format&fit=crop&w=1400&q=80"
+    return "☁️", "https://images.unsplash.com/photo-1519852476560-1b3e4c0d17e9?auto=format&fit=crop&w=1400&q=80"
+
+
+def load_forecast_data():
+    if not FORECAST_PATH.exists():
+        return {}
+    try:
+        with open(FORECAST_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def write_forecast_data(payload):
+    try:
+        with open(FORECAST_PATH, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)
+    except Exception:
+        pass
+
+
+def run_ml_pipeline():
+    script = ROOT / "Weather Condition Prediction Using Machine Learning.py"
+    if not script.exists():
+        return {"status": "error", "message": "ML script not found"}
+    try:
+        proc = subprocess.run([sys.executable, str(script)], capture_output=True, text=True, timeout=600)
+        if proc.returncode != 0:
+            return {"status": "error", "message": proc.stderr or "Script failed"}
+        forecast = load_forecast_data()
+        return {"status": "success", "message": "Model refreshed", "forecast": forecast}
+    except subprocess.TimeoutExpired:
+        return {"status": "error", "message": "Model refresh timed out"}
+    except Exception as e:
+        return {"status": "error", "message": f"Error running model: {e}"}
+
+
+def get_forecast_or_fallback():
+    forecast = load_forecast_data()
+    if forecast and forecast.get("current_weather") and forecast.get("weekly_forecast"):
+        return forecast
+    return {}
 
 
 def build_weekly_forecast(rain_prob, weather):
@@ -183,24 +226,26 @@ def index():
     if rain_vals:
         rain_prob = float(sum(rain_vals) / len(rain_vals))
 
-    # get latest weather summary (humidity, wind, temp)
-    weather = get_latest_weather_summary()
+    forecast = get_forecast_or_fallback()
     place_forecast = load_place_forecast().get('places', [])
-    weather_icon, background_image_url = choose_background_asset(rain_prob)
-    weekly_forecast = build_weekly_forecast(rain_prob, weather)
-    today, tomorrow = build_today_tomorrow(weather, rain_prob)
+    current_prediction = forecast.get('current_weather', {})
+    weekly_forecast = forecast.get('weekly_forecast') or build_weekly_forecast(rain_prob, get_latest_weather_summary())
+    today = current_prediction.get('supporting_data', {}) or get_latest_weather_summary()
+    tomorrow = forecast.get('tomorrow', {}) or build_today_tomorrow(today, rain_prob)[1]
+    weather_icon, background_image_url = choose_background_asset(current_prediction.get('predicted_main'))
 
     return render_template(
         "index.html",
         images=available_images,
         rain_prob=rain_prob,
-        weather=weather,
-        place_forecast=place_forecast,
+        current_prediction=current_prediction,
         weather_icon=weather_icon,
         background_image_url=background_image_url,
         weekly_forecast=weekly_forecast,
         today=today,
         tomorrow=tomorrow,
+        forecast_available=bool(weekly_forecast),
+        place_forecast=place_forecast,
     )
 
 
@@ -214,23 +259,16 @@ def metrics_file(filename):
     return send_from_directory(str(METRICS_DIR), filename)
 
 
-@app.route("/run")
-def run_pipeline():
-    # Run the main python script as a subprocess
-    script = ROOT / "Weather Condition Prediction Using Machine Learning.py"
-    if not script.exists():
-        flash("Main script not found", "danger")
-        return redirect(url_for("index"))
-    try:
-        proc = subprocess.run([sys.executable, str(script)], capture_output=True, text=True, timeout=600)
-        flash("Script finished. Check dashboard for updated metrics and images.", "success")
-        if proc.returncode != 0:
-            flash(f"Script exited with code {proc.returncode}: {proc.stderr}", "warning")
-    except subprocess.TimeoutExpired:
-        flash("Script timed out.", "danger")
-    except Exception as e:
-        flash(f"Error running script: {e}", "danger")
-    return redirect(url_for("index"))
+@app.route("/refresh", methods=["GET"])
+def refresh_model():
+    result = run_ml_pipeline()
+    return jsonify(result)
+
+
+@app.route("/api/forecast", methods=["GET"])
+def api_forecast():
+    forecast = load_forecast_data()
+    return jsonify({"forecast": forecast})
 
 
 if __name__ == "__main__":

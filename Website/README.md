@@ -19,5 +19,5 @@ python Website/Weather_Forecaster.py
 4. Open http://127.0.0.1:5000 in your browser.
 
 Notes:
-- Click 'Run Pipeline' to execute the main script `Weather Condition Prediction Using Machine Learning.py`. This will update `algorithm_metrics.json`, per-algorithm files in `metrics/`, and overwrite images in the repo root.
-- The dashboard reads `algorithm_metrics.json` to draw charts.
+- The dashboard automatically refreshes the ML model when you open the site and can be refreshed manually using the refresh button.
+- The page loads predictions from `weather_predictions.json`, and metrics are read from `algorithm_metrics.json` to draw charts.
