@@ -1,0 +1,124 @@
+{
+    "generated_at": "2026-05-02T22:26:52.419361",
+    "current_weather": {
+        "timestamp": "2023-11-24 00:05:05+08:00",
+        "predicted_main": "Thunderstorm",
+        "predicted_description": "thunderstorm with light rain",
+        "confidence": 100.0,
+        "supporting_data": {
+            "city_name": "Zamboanga City",
+            "main.temp": 24.99,
+            "main.humidity": 100.0,
+            "wind.speed": 2.06,
+            "clouds.all": 100.0,
+            "weather.description": "thunderstorm with light rain"
+        }
+    },
+    "weekly_forecast": [
+        {
+            "date": "2026-05-03",
+            "day": "Sunday",
+            "predicted_main": "Rain",
+            "predicted_description": "light rain",
+            "confidence": 100.0,
+            "supporting_data": {
+                "city_name": "Tuguegarao",
+                "main.temp": 25.352857142857143,
+                "main.humidity": 90.14285714285714,
+                "wind.speed": 2.2271428571428573,
+                "clouds.all": 62.285714285714285,
+                "weather.description": "light rain"
+            }
+        },
+        {
+            "date": "2026-05-04",
+            "day": "Monday",
+            "predicted_main": "Rain",
+            "predicted_description": "light rain",
+            "confidence": 100.0,
+            "supporting_data": {
+                "city_name": "Toledo City",
+                "main.temp": 25.689999999999998,
+                "main.humidity": 90.0,
+                "wind.speed": 2.20625,
+                "clouds.all": 57.625,
+                "weather.description": "light rain"
+            }
+        },
+        {
+            "date": "2026-05-05",
+            "day": "Tuesday",
+            "predicted_main": "Rain",
+            "predicted_description": "light rain",
+            "confidence": 100.0,
+            "supporting_data": {
+                "city_name": "Tayabas",
+                "main.temp": 25.54555555555556,
+                "main.humidity": 90.33333333333333,
+                "wind.speed": 2.261111111111111,
+                "clouds.all": 62.111111111111114,
+                "weather.description": "light rain"
+            }
+        },
+        {
+            "date": "2026-05-06",
+            "day": "Wednesday",
+            "predicted_main": "Rain",
+            "predicted_description": "light rain",
+            "confidence": 100.0,
+            "supporting_data": {
+                "city_name": "Tarlac City",
+                "main.temp": 25.750999999999998,
+                "main.humidity": 89.7,
+                "wind.speed": 2.102,
+                "clouds.all": 62.4,
+                "weather.description": "light rain"
+            }
+        },
+        {
+            "date": "2026-05-07",
+            "day": "Thursday",
+            "predicted_main": "Rain",
+            "predicted_description": "light rain",
+            "confidence": 100.0,
+            "supporting_data": {
+                "city_name": "Tanjay",
+                "main.temp": 25.956363636363633,
+                "main.humidity": 90.27272727272727,
+                "wind.speed": 2.0927272727272728,
+                "clouds.all": 58.63636363636363,
+                "weather.description": "light rain"
+            }
+        },
+        {
+            "date": "2026-05-08",
+            "day": "Friday",
+            "predicted_main": "Rain",
+            "predicted_description": "light rain",
+            "confidence": 100.0,
+            "supporting_data": {
+                "city_name": "Tangub",
+                "main.temp": 25.973333333333333,
+                "main.humidity": 90.16666666666667,
+                "wind.speed": 2.1683333333333334,
+                "clouds.all": 54.5,
+                "weather.description": "light rain"
+            }
+        },
+        {
+            "date": "2026-05-09",
+            "day": "Saturday",
+            "predicted_main": "Rain",
+            "predicted_description": "light rain",
+            "confidence": 100.0,
+            "supporting_data": {
+                "city_name": "Tandag",
+                "main.temp": 25.876153846153844,
+                "main.humidity": 90.23076923076923,
+                "wind.speed": 2.129230769230769,
+                "clouds.all": 55.46153846153846,
+                "weather.description": "light rain"
+            }
+        }
+    ]
+}

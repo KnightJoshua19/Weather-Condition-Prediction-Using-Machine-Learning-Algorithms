@@ -31,7 +31,7 @@ Joshua M. Esclamado
 # ================================
 from pathlib import Path
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend to prevent display issues
@@ -43,17 +43,17 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.decomposition import PCA
+import numpy as np
 
 
 # ================================
 # 2. LOAD DATASET
 # ================================
 DATA_DIR = Path(__file__).resolve().parent / "Weather Datasets"
-Dataset_1 = DATA_DIR / "Weather Training Data.csv"
-Dataset_2 = DATA_DIR / "Weather Reading from Major Cities Around the World.csv"
+weather_dataset = DATA_DIR / "202311_CombinedData.csv"
 
-if Dataset_1.exists():
-    data_file = Dataset_1
+if weather_dataset.exists():
+    data_file = weather_dataset
 else:
     csvs = list(DATA_DIR.glob("*.csv")) if DATA_DIR.exists() else []
     excels = list(DATA_DIR.glob("*.xls*")) if DATA_DIR.exists() else []
@@ -76,46 +76,48 @@ print(f"Loaded dataset: {data_file}")
 # 3. DATA PREPROCESSING
 # ================================
 
-# Include Weather Reading from Major Cities Around the World dataset to add latitude and longitude features based on location
-cities_df = pd.read_csv(Dataset_2)
-if "Location" in preprocessed_df.columns and "City" in cities_df.columns:
-    preprocessed_df = preprocessed_df.merge(cities_df[["City", "Latitude", "Longitude"]], left_on="Location", right_on="City", how="left")
-    preprocessed_df = preprocessed_df.drop(columns=["City"], errors="ignore")
-    
-# Drop columns that are not useful for modeling
-non_feature_columns = ["row ID"]
-preprocessed_df = preprocessed_df.drop(columns=non_feature_columns, errors="ignore")
+# Remove columns not useful for modeling
+non_feature_columns = ["row ID", "datetime", "extraction_date_time", "weather.icon", "sys.sunrise", "sys.sunset"]
+preprocessed_df = preprocessed_df.drop(columns=[c for c in non_feature_columns if c in preprocessed_df.columns], errors="ignore")
 
-
-# Drop columns with more than 50% missing values
-missing_ratio = preprocessed_df.isna().mean()
-cols_to_drop = missing_ratio[missing_ratio > 0.5].index.tolist()
-cols_to_drop = [c for c in cols_to_drop if c not in ["RainToday"]]
-preprocessed_df = preprocessed_df.drop(columns=cols_to_drop, errors="ignore")
-print(f"Dropped columns with too many missing values: {cols_to_drop}\n")
-
-
-# Fill remaining missing values using column mean (average) instead of forward fill
+# Fill missing values with column averages (numeric) or mode (categorical)
 for col in preprocessed_df.select_dtypes(include=["number"]).columns:
     if preprocessed_df[col].isna().any():
         preprocessed_df[col] = preprocessed_df[col].fillna(preprocessed_df[col].mean())
 
+for col in preprocessed_df.select_dtypes(include=["object", "string"]).columns:
+    if preprocessed_df[col].isna().any():
+        mode_value = preprocessed_df[col].mode()
+        if not mode_value.empty:
+            preprocessed_df[col] = preprocessed_df[col].fillna(mode_value[0])
+        else:
+            preprocessed_df[col] = preprocessed_df[col].fillna("Unknown")
 
-# Convert target to binary and use RainTomorrow as the label for this dataset
-target_column = "RainTomorrow"
+print(f"Filled all missing values: numeric columns with mean, categorical columns with mode or 'Unknown'\n")
 
-if preprocessed_df[target_column].dtype == object:
-    preprocessed_df[target_column] = preprocessed_df[target_column].map({"Yes": 1, "No": 0})
+# Use weather.main as the classification target
+target_column = "weather.main"
+preprocessed_df[target_column] = preprocessed_df[target_column].fillna("Unknown")
 
 print(f"Using target column: {target_column}\n")
 
+# Keep a copy with original labels for visualization and output
+raw_target = preprocessed_df[target_column].astype(str).copy()
 
-# Convert categorical variables to numeric
-label_encoder = LabelEncoder()
-for col in preprocessed_df.select_dtypes(include=["object", "string"]).columns:
-    preprocessed_df[col] = preprocessed_df[col].fillna("Unknown")
-    preprocessed_df[col] = label_encoder.fit_transform(preprocessed_df[col])
+target_le = LabelEncoder()
+y = target_le.fit_transform(raw_target)
 
+feature_columns = [c for c in preprocessed_df.columns if c not in [target_column, "weather.description"]]
+feature_df = preprocessed_df[feature_columns].copy()
+
+categorical_encoders = {}
+for col in feature_df.select_dtypes(include=["object", "string"]).columns:
+    feature_df[col] = feature_df[col].fillna("Unknown").astype(str)
+    le = LabelEncoder()
+    feature_df[col] = le.fit_transform(feature_df[col])
+    categorical_encoders[col] = le
+
+X = feature_df
 
 df = preprocessed_df.copy()
 
@@ -138,7 +140,7 @@ plt.savefig("distribution.png")
 plt.close()
 
 
-corr = df.corr()
+corr = df.select_dtypes(include=[np.number]).corr()
 plt.figure(figsize=(14, 12))
 sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", center=0)
 plt.title("Feature Correlation Matrix")
@@ -150,10 +152,6 @@ plt.close()
 # ================================
 # 5. MODEL PREPARATION
 # ================================
-
-
-X = df.drop(target_column, axis=1)
-y = df[target_column]
 
 
 scaler = StandardScaler()
@@ -168,6 +166,7 @@ X_scaled = scaler.fit_transform(X)
 APPLY_PCA = True
 PCA_VARIANCE = 0.95
 PCA_N_COMPONENTS = None  # set to int to force fixed number of components
+pca = None
 
 if APPLY_PCA:
     if PCA_N_COMPONENTS:
@@ -232,8 +231,10 @@ results = [
     evaluate_model(Decision_Tree_Algorithm, "Decision Tree"),
 ]
 
-
-feature_importances = pd.Series(Decision_Tree_Algorithm.feature_importances_, index=X.columns).sort_values(ascending=False)
+feature_index = feature_names if len(feature_names) == len(Decision_Tree_Algorithm.feature_importances_) else X.columns
+feature_importances = pd.Series(
+    Decision_Tree_Algorithm.feature_importances_, index=feature_index
+).sort_values(ascending=False)
 plt.figure(figsize=(10, 6))
 sns.barplot(x=feature_importances.values, y=feature_importances.index)
 plt.title("Decision Tree Feature Importances")
@@ -242,22 +243,9 @@ plt.ylabel("Feature")
 plt.tight_layout()
 plt.savefig("feature_importance.png")
 plt.close()
-# If PCA was applied, also save component importances with PC labels
-try:
-    fi = pd.Series(Decision_Tree_Algorithm.feature_importances_, index=feature_names).sort_values(ascending=False)
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x=fi.values, y=fi.index)
-    plt.title("Decision Tree Feature Importances")
-    plt.xlabel("Importance")
-    plt.ylabel("Feature")
-    plt.tight_layout()
-    plt.savefig("feature_importance.png")
-    plt.close()
-except Exception:
-    pass
 
 
-print("\nSaved visualizations: distribution.png, correlation_heatmap.png, logistic_regression_confusion_matrix.png, decision_tree_confusion_matrix.png, random_forest_confusion_matrix.png, feature_importance.png")
+print("\nSaved visualizations: distribution.png, correlation_heatmap.png, decision_tree_confusion_matrix.png, feature_importance.png")
 
 
 # ================================
@@ -266,14 +254,13 @@ print("\nSaved visualizations: distribution.png, correlation_heatmap.png, logist
 
 
 print("===== RAW DATA SAMPLE =====")
-key_columns = ['Location', 'MinTemp', 'MaxTemp', 'Rainfall', 'RainToday']
-print(raw_df[key_columns].head(5))
+raw_sample_columns = ['datetime', 'city_name', 'main.temp', 'weather.main', 'weather.description']
+print(raw_df[raw_sample_columns].head(5))
 
 
 print("\n===== PREPROCESSED DATA SAMPLE =====")
-# For preprocessed, Location is encoded, so use numeric columns
-numeric_columns = ['MinTemp', 'MaxTemp', 'Rainfall', 'RainToday']
-print(preprocessed_df[numeric_columns].head(5))
+preprocessed_sample_columns = ['city_name', 'main.temp', 'main.humidity', 'wind.speed', 'clouds.all', 'weather.main', 'weather.description']
+print(preprocessed_df[preprocessed_sample_columns].head(5))
 
 
 print("\n===== MODEL RESULTS =====")
@@ -295,10 +282,10 @@ for result in results:
     # Parse the classification report to extract metrics
     report_dict = classification_report(y_test, result['model'].predict(X_test), output_dict=True)
     
-    # compute mean predicted probability for the positive class if available
+    # compute mean predicted probability for the chosen class if available
     try:
-        proba = result['model'].predict_proba(X_test)[:, 1]
-        mean_proba = float(proba.mean())
+        proba = result['model'].predict_proba(X_test)
+        mean_proba = float(np.max(proba, axis=1).mean())
     except Exception:
         mean_proba = None
 
@@ -328,7 +315,7 @@ for result in results:
             }
         },
         "confusion_matrix": result['confusion_matrix'].tolist(),
-        "rain_probability": {"value": mean_proba, "description": "Mean predicted probability of rain on the test set"}
+        "label_probability": {"value": mean_proba, "description": "Mean predicted probability of the chosen weather.main label on the test set"}
     }
     algorithms_data.append(algorithm_entry)
 
@@ -370,30 +357,102 @@ for entry in metrics_output.get('algorithms', []):
 
 
 # ================================
-# 10. PLACE FORECAST SUMMARY
-# Generate per-location rain/no-rain forecast confidence using Decision Tree
-try:
-    proba = Decision_Tree_Algorithm.predict_proba(X_final)[:, 1]
-    place_summary = []
-    if 'Location' in raw_df.columns:
-        for location, group in raw_df.groupby('Location', dropna=False):
-            indices = group.index.tolist()
-            if not indices:
-                continue
-            location_probs = proba[indices]
-            confidence_pct = round(float(location_probs.mean()) * 100, 1)
-            place_summary.append({
-                'Location': str(location) if pd.notna(location) else 'Unknown',
-                'rain_prediction': 'Rain' if float(location_probs.mean()) >= 0.5 else 'No Rain',
-                'confidence_pct': confidence_pct,
-                'total': int(len(location_probs))
-            })
-    place_summary = sorted(place_summary, key=lambda x: (x['rain_prediction'] != 'Rain', -x['confidence_pct']))
-    with open(Path(__file__).resolve().parent / 'place_forecast.json', 'w') as f:
-        json.dump({'places': place_summary}, f, indent=4)
-    print(f"\n✓ Place forecast saved to place_forecast.json ({len(place_summary)} locations)")
-except Exception as e:
-    print(f"Failed to create place_forecast.json: {e}")
+# 10. PREDICTION HELPERS
+# ================================
+
+description_by_main = (
+    raw_df.groupby("weather.main")["weather.description"]
+    .agg(lambda s: s.mode().iloc[0] if not s.mode().empty else "Unknown")
+    .to_dict()
+)
+
+
+def encode_feature_row(row):
+    prepared = {}
+    for col in feature_columns:
+        value = row.get(col) if hasattr(row, 'get') else row[col]
+        if pd.isna(value):
+            if col in preprocessed_df.select_dtypes(include=["number"]).columns:
+                value = preprocessed_df[col].mean()
+            else:
+                mode_value = preprocessed_df[col].mode()
+                value = mode_value.iloc[0] if not mode_value.empty else "Unknown"
+        prepared[col] = value
+
+    for col, le in categorical_encoders.items():
+        value = str(prepared[col])
+        if value not in le.classes_:
+            value = le.classes_[0]
+        prepared[col] = int(le.transform([value])[0])
+
+    values = np.array([prepared[col] for col in feature_columns], dtype=float).reshape(1, -1)
+    values_scaled = scaler.transform(values)
+    if APPLY_PCA and pca is not None:
+        values_scaled = pca.transform(values_scaled)
+    return values_scaled
+
+
+def build_supporting_data(row):
+    return {
+        "city_name": row.get("city_name", None),
+        "main.temp": float(row.get("main.temp", np.nan)) if not pd.isna(row.get("main.temp", np.nan)) else None,
+        "main.humidity": float(row.get("main.humidity", np.nan)) if not pd.isna(row.get("main.humidity", np.nan)) else None,
+        "wind.speed": float(row.get("wind.speed", np.nan)) if not pd.isna(row.get("wind.speed", np.nan)) else None,
+        "clouds.all": float(row.get("clouds.all", np.nan)) if not pd.isna(row.get("clouds.all", np.nan)) else None,
+        "weather.description": row.get("weather.description", None),
+    }
+
+
+def predict_current_weather():
+    latest = raw_df.tail(1).iloc[0]
+    X_pred = encode_feature_row(latest)
+    pred_idx = Decision_Tree_Algorithm.predict(X_pred)[0]
+    probabilities = Decision_Tree_Algorithm.predict_proba(X_pred)[0]
+    predicted_main = target_le.inverse_transform([pred_idx])[0]
+    return {
+        "timestamp": str(latest.get("datetime", datetime.now().isoformat())),
+        "predicted_main": predicted_main,
+        "predicted_description": description_by_main.get(predicted_main, "Unknown"),
+        "confidence": round(float(np.max(probabilities)) * 100, 2),
+        "supporting_data": build_supporting_data(latest),
+    }
+
+
+def predict_weekly_weather():
+    weekly_forecast = []
+    for day_offset in range(1, 8):
+        window_size = min(7 + day_offset - 1, len(raw_df))
+        window_data = raw_df.tail(window_size)
+        avg_row = {}
+        for col in feature_columns:
+            if col in window_data.select_dtypes(include=["number"]).columns:
+                avg_row[col] = window_data[col].mean()
+            else:
+                mode_val = window_data[col].mode()
+                avg_row[col] = mode_val.iloc[0] if not mode_val.empty else "Unknown"
+
+        X_pred = encode_feature_row(avg_row)
+        pred_idx = Decision_Tree_Algorithm.predict(X_pred)[0]
+        probabilities = Decision_Tree_Algorithm.predict_proba(X_pred)[0]
+        predicted_main = target_le.inverse_transform([pred_idx])[0]
+        weather_desc = description_by_main.get(predicted_main, "Unknown")
+        weekly_forecast.append({
+            "date": (datetime.now() + timedelta(days=day_offset)).date().isoformat(),
+            "day": (datetime.now() + timedelta(days=day_offset)).strftime("%A"),
+            "predicted_main": predicted_main,
+            "predicted_description": weather_desc,
+            "confidence": round(float(np.max(probabilities)) * 100, 2),
+            "supporting_data": build_supporting_data({**avg_row, "weather.description": weather_desc}),
+        })
+
+    return weekly_forecast
+
+
+# ================================
+# 11. PLOT METRICS OVER TIME (multi-line per metric)
+# ================================
+
+
 
 
 # ================================
@@ -468,3 +527,55 @@ if not df_metrics.empty:
     print(f"Saved {out_path}")
 else:
     print("No historical metrics available to plot.")
+
+
+# ================================
+# 12. GENERATE CURRENT AND WEEKLY WEATHER PREDICTIONS
+# ================================
+
+print("\n" + "="*50)
+print("WEATHER PREDICTIONS")
+print("="*50)
+
+current_weather = predict_current_weather()
+if current_weather:
+    print("\n--- CURRENT WEATHER PREDICTION ---")
+    print(f"Timestamp: {current_weather['timestamp']}")
+    print(f"Predicted Weather Main: {current_weather['predicted_main']}")
+    print(f"Predicted Description: {current_weather['predicted_description']}")
+    print(f"Confidence: {current_weather['confidence']}%")
+    print("Supporting data:")
+    for k, v in current_weather['supporting_data'].items():
+        print(f"  {k}: {v}")
+else:
+    print("Failed to generate current weather prediction")
+
+weekly_forecast = predict_weekly_weather()
+if weekly_forecast:
+    print("\n--- 7-DAY WEATHER FORECAST ---")
+    for day_forecast in weekly_forecast:
+        print(f"\n{day_forecast['day'].upper()} ({day_forecast['date']})")
+        print(f"  Predicted Weather Main: {day_forecast['predicted_main']}")
+        print(f"  Predicted Description: {day_forecast['predicted_description']}")
+        print(f"  Confidence: {day_forecast['confidence']}%")
+        print("  Supporting data:")
+        for k, v in day_forecast['supporting_data'].items():
+            print(f"    {k}: {v}")
+else:
+    print("Failed to generate weekly weather forecast")
+
+predictions_output = {
+    "generated_at": datetime.now().isoformat(),
+    "current_weather": current_weather,
+    "weekly_forecast": weekly_forecast
+}
+
+predictions_json_path = Path(__file__).resolve().parent / "weather_predictions.json"
+try:
+    with open(predictions_json_path, 'w') as f:
+        json.dump(predictions_output, f, indent=4)
+    print(f"\n✓ Predictions saved to weather_predictions.json")
+except Exception as e:
+    print(f"Error saving predictions: {e}")
+
+print("\n" + "="*50)
