@@ -49,28 +49,26 @@ from sklearn.decomposition import PCA
 # 2. LOAD DATASET
 # ================================
 DATA_DIR = Path(__file__).resolve().parent / "Weather Datasets"
-Dataset_1 = DATA_DIR / "Weather Training Data.csv"
-Dataset_2 = DATA_DIR / "Weather Reading from Major Cities Around the World.csv"
+Dataset_1 = DATA_DIR / "Weather Training Data.csv" #<= No Philippines?
+Dataset_2 = DATA_DIR / "Weather Reading from Major Cities Around the World.csv" #<= Only 2 Philippines
+Dataset_3 = DATA_DIR / "GlobalWeatherRepository.csv"
 
-if Dataset_1.exists():
-    data_file = Dataset_1
-else:
-    csvs = list(DATA_DIR.glob("*.csv")) if DATA_DIR.exists() else []
-    excels = list(DATA_DIR.glob("*.xls*")) if DATA_DIR.exists() else []
-    if csvs:
-        data_file = csvs[0]
-    elif excels:
-        data_file = excels[0]
-    else:
-        raise FileNotFoundError(f"No CSV or Excel dataset found in {DATA_DIR}")
+Datasets = (Dataset_1, Dataset_2, Dataset_3)
+FileStatus = (False, False, False)
+DataFiles = []
 
-if data_file.suffix.lower() in [".xls", ".xlsx"]:
-    raw_df = pd.read_excel(data_file)
-else:
-    raw_df = pd.read_csv(data_file)
-preprocessed_df = raw_df.copy()
-print(f"Loaded dataset: {data_file}")
+for d in range(len(Datasets)):
+    if Datasets[d].exists():
+        FileStatus[d] = True
+        DataFiles.append(d)
+if FileStatus.count(True) < 1: raise FileNotFoundError("No datasets found") 
 
+raw_dfs = []
+for d in DataFiles:
+    df = pd.read_csv(Datasets[d])
+    raw_dfs.append(df.loc[df['country'] == 'Philippines']) #GET ONLY PHILIPPINES
+
+    #SLEEPY PROCRASTINATION TIME T_T
 
 # ================================
 # 3. DATA PREPROCESSING
