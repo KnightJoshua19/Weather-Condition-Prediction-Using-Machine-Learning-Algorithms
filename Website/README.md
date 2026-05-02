@@ -7,13 +7,13 @@ Run locally:
 2. Install requirements:
 
 ```bash
-python -m pip install -r web/requirements.txt
+python -m pip install -r Website/requirements.txt
 ```
 
 3. From repository root run:
 
 ```bash
-python web/app.py
+python Website/Weather_Forecaster.py
 ```
 
 4. Open http://127.0.0.1:5000 in your browser.
