@@ -312,10 +312,12 @@ preprocessed_sample_columns = ['city_name', 'main.temp', 'main.humidity', 'wind.
 print(preprocessed_df[preprocessed_sample_columns].head(5))
 
 
-print("\n===== MODEL RESULTS =====")print("\n--- Validation Results ---")
+print("\n===== MODEL RESULTS =====")
+print("\n--- Validation Results ---")
 print(f"Accuracy: {validation_result['accuracy']:.4f}")
 print("Classification Report:\n", validation_result["report"])
-print("Confusion Matrix:\n", validation_result["confusion_matrix"])for result in results:
+print("Confusion Matrix:\n", validation_result["confusion_matrix"])
+for result in results:
     print(f"\n--- {result['name']} ---")
     print(f"Accuracy: {result['accuracy']:.4f}")
     print("Classification Report:\n", result["report"])

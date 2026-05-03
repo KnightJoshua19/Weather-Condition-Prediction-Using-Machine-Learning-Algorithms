@@ -20,4 +20,5 @@ python Website/Weather_Forecaster.py
 
 Notes:
 - The dashboard automatically refreshes the ML model when you open the site and can be refreshed manually using the refresh button.
+- The trained model pipeline is saved under `models/weather_pipeline.joblib` after training, so the deployment can reuse the persisted model.
 - The page loads predictions from `weather_predictions.json`, and metrics are read from `algorithm_metrics.json` to draw charts.
