@@ -294,7 +294,7 @@ plt.savefig("feature_importance.png")
 plt.close()
 
 
-print("\nSaved visualizations: distribution.png, correlation_heatmap.png, decision_tree_validation_confusion_matrix.png, decision_tree_test_confusion_matrix.png, feature_importance.png")
+print("\nSaved visualizations: distribution.png, correlation_heatmap.png, decision_tree_validation_confusion_matrix.png, decision_tree_confusion_matrix.png, feature_importance.png")
 
 
 # ================================
