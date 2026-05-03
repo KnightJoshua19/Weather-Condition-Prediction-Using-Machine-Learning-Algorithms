@@ -16,7 +16,38 @@
       --card-radius:18px;
       --panel-border: rgba(46,80,119,0.16);
     }
-    body { padding: 1.5rem; background: var(--color-bg); font-family: 'Lato', sans-serif; color: var(--color-dark); }
+    body { padding: 0; background: var(--color-bg); font-family: 'Lato', sans-serif; color: var(--color-dark); display: flex; flex-direction: column; min-height: 100vh; --font-size-base: 16px; --sidebar-position: right; }
+    body.sidebar-left { --sidebar-position: left; }
+    body.font-size-small { --font-size-base: 14px; }
+    body.font-size-large { --font-size-base: 18px; }
+    body { font-size: var(--font-size-base); }
+    .header { background: #fff; border-bottom: 1px solid var(--panel-border); padding: 1rem 0; display: flex; justify-content: space-between; align-items: center; }
+    .header .container { flex: 1; }
+    .settings-btn { background: none; border: 1px solid var(--color-dark); color: var(--color-dark); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+    .settings-btn:hover { background: rgba(46,80,119,0.08); }
+    .nav-bar { background: var(--color-dark); color: #fff; padding: 0.5rem 0; }
+    .nav-bar .nav-link { color: #fff; }
+    .nav-bar .nav-link:hover { color: var(--color-light); }
+    .main-content { display: flex; flex: 1; flex-direction: row; }
+    .main-content.sidebar-right { flex-direction: row-reverse; }
+    .sidebar { width: 300px; background: linear-gradient(135deg, var(--color-mid) 0%, var(--color-light) 100%); border-left: none; border-right: 1px solid rgba(0,0,0,0.1); padding: 2rem 1.5rem; color: #fff; }
+    .sidebar h5 { color: #fff; font-weight: 700; font-size: 1.3rem; margin-bottom: 1.5rem; }
+    .sidebar .info-card { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; }
+    .sidebar .info-label { color: rgba(255,255,255,0.9); font-size: 0.85rem; }
+    .sidebar .info-value { color: #fff; font-size: 1.8rem; font-weight: 700; }
+    .sidebar .info-icon { font-size: 2rem; opacity: 1; }
+    .sidebar .btn { background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.4); color: #fff; }
+    .sidebar .btn:hover { background: rgba(255,255,255,0.35); }
+    .sidebar .text-muted { color: rgba(255,255,255,0.85); }
+    .content { flex: 1; padding: 1.5rem; }
+    .footer { background: var(--color-dark); color: #fff; text-align: center; padding: 1rem 0; margin-top: auto; font-size: 0.9rem; }
+    .tabs-vertical { display: flex; }
+    .tabs-vertical .tab-buttons { width: 200px; border-right: 1px solid var(--panel-border); }
+    .tabs-vertical .tab-buttons button { width: 100%; padding: 1rem; border: none; background: #f8f9fa; border-bottom: 1px solid var(--panel-border); text-align: left; }
+    .tabs-vertical .tab-buttons button.active { background: var(--color-light); color: #fff; }
+    .tabs-vertical .tab-content { flex: 1; padding: 1rem; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
     .img-thumb { max-width: 100%; height: auto; border: 1px solid rgba(0,0,0,0.05); padding: 4px; background: #fff; }
     .dashboard-grid{ display:grid; gap:1.5rem; }
     .panel{ background:#fff; border:1px solid var(--panel-border); border-radius:var(--card-radius); box-shadow:0 14px 32px rgba(46,80,119,0.08); overflow:hidden; }
@@ -77,154 +108,209 @@
   </style>
 </head>
 <body>
-<div class="container">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
+  <header class="header">
+    <div class="container">
       <h1 style="font-family: 'Georgia', serif; color: var(--color-dark);">Philippines Weather Forecast</h1>
       <div style="color:var(--color-dark); margin-top:-8px;">Interactive weekly weather dashboard with ML-powered predictions</div>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <button id="refreshButton" class="btn btn-outline-dark" type="button">⟳ Refresh Model</button>
-      <span id="refreshStatus" class="text-muted" style="font-size:0.95rem;">Auto-refreshing model on page open</span>
+    <button class="settings-btn" id="settingsBtn">⚙ Settings</button>
+  </header>
+
+  <nav class="nav-bar">
+    <div class="container">
+      <ul class="nav">
+        <li class="nav-item">
+          <a class="nav-link" href="#">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Forecast</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">About</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="main-content" id="mainContent">
+    <aside class="sidebar">
+      <h5>Predicted Weather</h5>
+      
+      {% if current_prediction.predicted_main %}
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">{{ weather_icon }}</div>
+        <div style="font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem;">{{ current_prediction.predicted_main }}</div>
+        <div style="font-size: 0.95rem; opacity: 0.95;">{{ current_prediction.predicted_description or 'Current outlook' }}</div>
+        <div style="font-size: 1.2rem; font-weight: 700; margin-top: 0.5rem;">Confidence: {{ current_prediction.confidence or '—' }}%</div>
+      </div>
+      {% endif %}
+      
+      <div style="border-top: 1px solid rgba(255,255,255,0.3); padding-top: 1.5rem; margin-top: 1.5rem;">
+        <div style="margin-bottom: 1.5rem;">
+          <div style="font-size: 0.85rem; opacity: 0.9;">Temperature</div>
+          <div style="font-size: 2.2rem; font-weight: 700;">{{ today.temp if today.temp is not none else '—' }}°C</div>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <div style="font-size: 0.85rem; opacity: 0.9;">Humidity</div>
+          <div style="font-size: 2.2rem; font-weight: 700;">{{ today.humidity if today.humidity is not none else '—' }}%</div>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <div style="font-size: 0.85rem; opacity: 0.9;">Wind Speed</div>
+          <div style="font-size: 2.2rem; font-weight: 700;">{{ today.wind if today.wind is not none else '—' }}</div>
+          <div style="font-size: 0.85rem; opacity: 0.9;">km/h</div>
+        </div>
+      </div>
+      
+      <button id="refreshButton" class="btn w-100" style="margin-top: 2rem;">Refresh</button>
+      <span id="refreshStatus" class="d-block mt-2" style="font-size:0.9rem; text-align: center;">Ready</span>
+    </aside>
+
+    <main class="content">
+      <div class="tabs-vertical">
+        <div class="tab-buttons">
+          <button class="tab-button active" data-tab="main">Main Weather</button>
+          <button class="tab-button" data-tab="forecast">Weekly Forecast</button>
+          <button class="tab-button" data-tab="comparison">Today & Tomorrow</button>
+          <button class="tab-button" data-tab="places">Place Forecast</button>
+        </div>
+        <div class="tab-content">
+          <div id="main" class="tab-pane active">
+            <section class="panel weather-panel" style="background-image: url('{{ background_image_url }}'); min-height: 400px;">
+              <!-- Only sky, no other objects -->
+            </section>
+          </div>
+          <div id="forecast" class="tab-pane">
+            <section class="panel forecast-panel">
+              <div class="panel-header">
+                <h5>Weekly Forecast</h5>
+                <p class="section-text">Philippines outlook for the next seven days.</p>
+              </div>
+              <div class="forecast-row weekly-grid">
+                {% for day in weekly_forecast %}
+                <div class="forecast-card" role="button" tabindex="0"
+                     data-day="{{ day.day }}"
+                     data-icon="{{ day.icon }}"
+                     data-condition="{{ day.condition }}"
+                     data-high="{{ day.high }}"
+                     data-low="{{ day.low }}"
+                     data-confidence="{{ day.confidence if day.confidence is not none else '—' }}"
+                     data-description="{{ day.predicted_description if day.predicted_description is defined else day.condition }}"
+                     data-main="{{ day.predicted_main if day.predicted_main is defined else day.condition }}">
+                  <div class="day-label">{{ day.day }}</div>
+                  <div class="forecast-icon">{{ day.icon }}</div>
+                  <div class="forecast-text">{{ day.condition }}</div>
+                  <div class="forecast-temp">{{ day.high }}° / {{ day.low }}°</div>
+                </div>
+                {% endfor %}
+              </div>
+            </section>
+          </div>
+          <div id="comparison" class="tab-pane">
+            <section class="panel tomorrow-panel">
+              <div class="panel-header">
+                <h5>Today & Tomorrow</h5>
+                <p class="section-text">Temperature and humidity comparison for the next 24 hours.</p>
+              </div>
+              <div class="forecast-row row gx-3 gy-3 p-3">
+                <div class="col-md-6">
+                  <div class="card small-card bordered-card">
+                    <div class="card-body">
+                      <h6>Today</h6>
+                      <div class="detail-row"><span>Temp</span><strong>{{ today.temp }}°C</strong></div>
+                      <div class="detail-row"><span>Humidity</span><strong>{{ today.humidity }}%</strong></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card small-card bordered-card">
+                    <div class="card-body">
+                      <h6>Tomorrow</h6>
+                      <div class="detail-row"><span>Temp</span><strong>{{ tomorrow.temp }}°C</strong></div>
+                      <div class="detail-row"><span>Humidity</span><strong>{{ tomorrow.humidity }}%</strong></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          <div id="places" class="tab-pane">
+            <section class="panel place-panel">
+              <div class="panel-header">
+                <h5>Place Forecast Confidence</h5>
+                <p class="section-text">Rain prediction confidence by location from the Decision Tree model.</p>
+              </div>
+              {% if place_forecast %}
+              <div class="table-responsive">
+                <table class="table table-borderless align-middle section-table">
+                  <thead>
+                    <tr>
+                      <th>Location</th>
+                      <th>Prediction</th>
+                      <th>Confidence</th>
+                      <th>Rows</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for place in place_forecast %}
+                    <tr>
+                      <td>{{ place.Location }}</td>
+                      <td><span class="badge {{ 'bg-primary' if place.rain_prediction=='Rain' else 'bg-success' }}">{{ place.rain_prediction }}</span></td>
+                      <td>{{ place.confidence_pct }}%</td>
+                      <td>{{ place.total }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <div class="alert alert-info">Place forecast data is not yet available. Refresh the model to generate predictions.</div>
+              {% endif %}
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; <span id="yearSpan">2026</span> Philippines Weather Forecast. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <div id="forecastOverlay" class="forecast-overlay d-none" aria-hidden="true"></div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; justify-content: center; align-items: center;">
+    <div style="background: #fff; border-radius: 12px; padding: 2rem; max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+      <h4 style="margin-bottom: 1.5rem; color: var(--color-dark);">Settings</h4>
+      
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--color-dark);">Font Size</label>
+        <select id="fontSizeSelect" style="width: 100%; padding: 0.5rem; border: 1px solid rgba(46,80,119,0.2); border-radius: 6px; font-size: 1rem;">
+          <option value="small">Small (14px)</option>
+          <option value="normal" selected>Normal (16px)</option>
+          <option value="large">Large (18px)</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--color-dark);">Sidebar Position</label>
+        <select id="sidebarPositionSelect" style="width: 100%; padding: 0.5rem; border: 1px solid rgba(46,80,119,0.2); border-radius: 6px; font-size: 1rem;">
+          <option value="right" selected>Right</option>
+          <option value="left">Left</option>
+        </select>
+      </div>
+      
+      <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <button id="closeSettingsBtn" style="padding: 0.5rem 1.5rem; border: 1px solid var(--color-dark); background: none; color: var(--color-dark); border-radius: 6px; cursor: pointer;">Close</button>
+        <button id="saveSettingsBtn" style="padding: 0.5rem 1.5rem; background: var(--color-dark); color: #fff; border: none; border-radius: 6px; cursor: pointer;">Save</button>
+      </div>
     </div>
   </div>
 
-  <div class="dashboard-grid">
-    <section class="panel weather-panel" style="background-image: url('{{ background_image_url }}');">
-      <div class="panel-overlay"></div>
-      <div class="panel-content">
-        <div class="d-flex justify-content-between align-items-start flex-column flex-md-row">
-          <div>
-            {% if current_prediction.predicted_main %}
-              <h2 class="hero-title">{{ current_prediction.predicted_main }}</h2>
-              <div class="hero-sub">{{ current_prediction.predicted_description or 'Forecast outlook' }} · Confidence: <strong>{{ current_prediction.confidence or '—' }}%</strong></div>
-            {% else %}
-              <h2 class="hero-title">Model warming up</h2>
-              <div class="hero-sub">Predictions are generated automatically when you visit the dashboard.</div>
-            {% endif %}
-          </div>
-          <div class="text-md-end mt-4 mt-md-0">
-            <div class="weather-icon">{{ weather_icon }}</div>
-            <div class="weather-label">Philippines</div>
-            <div class="weather-temp">{{ today.temp if today.temp is not none else '—' }}°C</div>
-          </div>
-        </div>
-
-        <div class="row mt-4">
-          <div class="col-md-4 mb-3">
-            <div class="info-card bordered-card">
-              <div class="info-icon">💧</div>
-              <div class="info-label">Humidity</div>
-              <div class="info-value">{{ today.humidity if today.humidity is not none else '—' }}%</div>
-            </div>
-          </div>
-          <div class="col-md-4 mb-3">
-            <div class="info-card bordered-card">
-              <div class="info-icon">💨</div>
-              <div class="info-label">Wind Speed</div>
-              <div class="info-value">{{ today.wind if today.wind is not none else '—' }} km/h</div>
-            </div>
-          </div>
-          <div class="col-md-4 mb-3">
-            <div class="info-card bordered-card">
-              <div class="info-icon">🌡️</div>
-              <div class="info-label">Temperature</div>
-              <div class="info-value">{{ today.temp if today.temp is not none else '—' }}°C</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel forecast-panel">
-      <div class="panel-header">
-        <h5>Weekly Forecast</h5>
-        <p class="section-text">Philippines outlook for the next seven days.</p>
-      </div>
-      <div class="forecast-row weekly-grid">
-        {% for day in weekly_forecast %}
-        <div class="forecast-card" role="button" tabindex="0"
-             data-day="{{ day.day }}"
-             data-icon="{{ day.icon }}"
-             data-condition="{{ day.condition }}"
-             data-high="{{ day.high }}"
-             data-low="{{ day.low }}"
-             data-confidence="{{ day.confidence if day.confidence is not none else '—' }}"
-             data-description="{{ day.predicted_description if day.predicted_description is defined else day.condition }}"
-             data-main="{{ day.predicted_main if day.predicted_main is defined else day.condition }}">
-          <div class="day-label">{{ day.day }}</div>
-          <div class="forecast-icon">{{ day.icon }}</div>
-          <div class="forecast-text">{{ day.condition }}</div>
-          <div class="forecast-temp">{{ day.high }}° / {{ day.low }}°</div>
-        </div>
-        {% endfor %}
-      </div>
-    </section>
-
-    <section class="panel tomorrow-panel">
-      <div class="panel-header">
-        <h5>Today & Tomorrow</h5>
-        <p class="section-text">Temperature and humidity comparison for the next 24 hours.</p>
-      </div>
-      <div class="forecast-row row gx-3 gy-3 p-3">
-        <div class="col-md-6">
-          <div class="card small-card bordered-card">
-            <div class="card-body">
-              <h6>Today</h6>
-              <div class="detail-row"><span>Temp</span><strong>{{ today.temp }}°C</strong></div>
-              <div class="detail-row"><span>Humidity</span><strong>{{ today.humidity }}%</strong></div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="card small-card bordered-card">
-            <div class="card-body">
-              <h6>Tomorrow</h6>
-              <div class="detail-row"><span>Temp</span><strong>{{ tomorrow.temp }}°C</strong></div>
-              <div class="detail-row"><span>Humidity</span><strong>{{ tomorrow.humidity }}%</strong></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel place-panel">
-      <div class="panel-header">
-        <h5>Place Forecast Confidence</h5>
-        <p class="section-text">Rain prediction confidence by location from the Decision Tree model.</p>
-      </div>
-      {% if place_forecast %}
-      <div class="table-responsive">
-        <table class="table table-borderless align-middle section-table">
-          <thead>
-            <tr>
-              <th>Location</th>
-              <th>Prediction</th>
-              <th>Confidence</th>
-              <th>Rows</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for place in place_forecast %}
-            <tr>
-              <td>{{ place.Location }}</td>
-              <td><span class="badge {{ 'bg-primary' if place.rain_prediction=='Rain' else 'bg-success' }}">{{ place.rain_prediction }}</span></td>
-              <td>{{ place.confidence_pct }}%</td>
-              <td>{{ place.total }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      {% else %}
-      <div class="alert alert-info">Place forecast data is not yet available. Refresh the model to generate predictions.</div>
-      {% endif %}
-    </section>
-  </div>
-</div>
-
-<div id="forecastOverlay" class="forecast-overlay d-none" aria-hidden="true"></div>
-
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

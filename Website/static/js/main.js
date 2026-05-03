@@ -3,29 +3,94 @@ document.addEventListener('DOMContentLoaded', function() {
   const refreshButton = document.getElementById('refreshButton');
   const refreshStatus = document.getElementById('refreshStatus');
   const overlay = document.getElementById('forecastOverlay');
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsModal = document.getElementById('settingsModal');
+  const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+  const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+  const fontSizeSelect = document.getElementById('fontSizeSelect');
+  const sidebarPositionSelect = document.getElementById('sidebarPositionSelect');
+  const mainContent = document.getElementById('mainContent');
+  const yearSpan = document.getElementById('yearSpan');
+  
+  // Initialize current year
+  yearSpan.textContent = new Date().getFullYear();
+
+  // Load settings from localStorage
+  function loadSettings() {
+    const fontSize = localStorage.getItem('weatherFontSize') || 'normal';
+    const sidebarPos = localStorage.getItem('weatherSidebarPosition') || 'right';
+    
+    applySettings(fontSize, sidebarPos);
+    fontSizeSelect.value = fontSize;
+    sidebarPositionSelect.value = sidebarPos;
+  }
+
+  // Apply settings to the page
+  function applySettings(fontSize, sidebarPos) {
+    document.body.classList.remove('font-size-small', 'font-size-normal', 'font-size-large');
+    if (fontSize === 'small') document.body.classList.add('font-size-small');
+    if (fontSize === 'large') document.body.classList.add('font-size-large');
+    
+    mainContent.classList.remove('sidebar-right');
+    if (sidebarPos === 'left') {
+      mainContent.classList.add('sidebar-left');
+    } else {
+      mainContent.classList.add('sidebar-right');
+    }
+  }
+
+  // Settings modal handlers
+  settingsBtn.addEventListener('click', () => {
+    settingsModal.style.display = 'flex';
+  });
+
+  closeSettingsBtn.addEventListener('click', () => {
+    settingsModal.style.display = 'none';
+  });
+
+  saveSettingsBtn.addEventListener('click', () => {
+    const fontSize = fontSizeSelect.value;
+    const sidebarPos = sidebarPositionSelect.value;
+    
+    localStorage.setItem('weatherFontSize', fontSize);
+    localStorage.setItem('weatherSidebarPosition', sidebarPos);
+    
+    applySettings(fontSize, sidebarPos);
+    settingsModal.style.display = 'none';
+  });
+
+  // Close settings modal when clicking outside
+  settingsModal.addEventListener('click', function(e) {
+    if (e.target === settingsModal) {
+      settingsModal.style.display = 'none';
+    }
+  });
+
+  // Load saved settings on page load
+  loadSettings();
 
   function setStatus(message, isError = false) {
     if (!refreshStatus) return;
     refreshStatus.textContent = message;
-    refreshStatus.style.color = isError ? '#c0392b' : '#415a77';
+    refreshStatus.style.color = isError ? '#fff' : 'rgba(255,255,255,0.9)';
   }
 
   async function refreshModel() {
     if (!refreshButton) return;
     refreshButton.disabled = true;
-    setStatus('Refreshing model... this may take a few seconds');
+    setStatus('Refreshing...');
 
     try {
       const response = await fetch('/refresh');
       const data = await response.json();
       if (data.status === 'success') {
-        setStatus('Model refreshed successfully. Reloading view...');
-        setTimeout(() => window.location.reload(), 750);
+        setStatus('Refreshed!');
+        setTimeout(() => window.location.reload(), 500);
       } else {
-        setStatus(data.message || 'Failed to refresh model', true);
+        setStatus(data.message || 'Failed', true);
       }
     } catch (error) {
-      setStatus('Refresh failed. Check server health.', true);
+      setStatus('Connection failed', true);
     } finally {
       refreshButton.disabled = false;
     }
@@ -34,6 +99,33 @@ document.addEventListener('DOMContentLoaded', function() {
   if (refreshButton) {
     refreshButton.addEventListener('click', refreshModel);
   }
+
+  // Auto-refresh ONCE on page load - use sessionStorage to track if refresh was done
+  const hasAutoRefreshed = sessionStorage.getItem('weatherAutoRefreshed');
+  if (!hasAutoRefreshed) {
+    sessionStorage.setItem('weatherAutoRefreshed', 'true');
+    setStatus('Initializing...');
+    setTimeout(() => {
+      refreshModel();
+    }, 500);
+  } else {
+    setStatus('Ready');
+  }
+
+  // Tab functionality
+  const tabButtons = document.querySelectorAll('.tab-button');
+  const tabPanes = document.querySelectorAll('.tab-pane');
+
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabPanes.forEach(pane => pane.classList.remove('active'));
+
+      button.classList.add('active');
+      const tabId = button.getAttribute('data-tab');
+      document.getElementById(tabId).classList.add('active');
+    });
+  });
 
   const cards = Array.from(document.querySelectorAll('.forecast-card'));
   cards.forEach(card => {
@@ -93,10 +185,4 @@ document.addEventListener('DOMContentLoaded', function() {
     overlay.setAttribute('aria-hidden', 'true');
     overlay.innerHTML = '';
   }
-
-  setTimeout(() => {
-    if (refreshStatus && refreshStatus.textContent.includes('Auto-refreshing')) {
-      refreshModel();
-    }
-  }, 400);
 });

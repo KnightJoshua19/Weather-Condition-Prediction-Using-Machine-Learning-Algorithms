@@ -329,7 +329,7 @@ json_path = Path(__file__).resolve().parent / "algorithm_metrics.json"
 with open(json_path, 'w') as f:
     json.dump(metrics_output, f, indent=4)
 
-print(f"\n✓ Metrics written to algorithm_metrics.json")
+print(f"\nMetrics written to algorithm_metrics.json")
 
 # Also write per-algorithm metric files into a `metrics/` folder (one file per algorithm)
 metrics_dir = Path(__file__).resolve().parent / "metrics"
