@@ -46,13 +46,15 @@ def load_place_forecast():
 
 def choose_background_asset(predicted_main):
     predicted_text = (predicted_main or "").lower()
+    images_dir = "images"
+    
     if "rain" in predicted_text or "shower" in predicted_text or "storm" in predicted_text:
-        return "⛈️", "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=80"
+        return "⛈️", url_for('static', filename=f'{images_dir}/sky_rain.svg')
     if "cloud" in predicted_text or "overcast" in predicted_text:
-        return "☁️", "https://images.unsplash.com/photo-1499346030926-9a72daac6c63?auto=format&fit=crop&w=1400&q=80"
+        return "☁️", url_for('static', filename=f'{images_dir}/sky_cloudy.svg')
     if "clear" in predicted_text or "sun" in predicted_text:
-        return "☀️", "https://images.unsplash.com/photo-1501975558161-3f0f7f7c5c1e?auto=format&fit=crop&w=1400&q=80"
-    return "☁️", "https://images.unsplash.com/photo-1519852476560-1b3e4c0d17e9?auto=format&fit=crop&w=1400&q=80"
+        return "☀️", url_for('static', filename=f'{images_dir}/sky_clear.svg')
+    return "☁️", url_for('static', filename=f'{images_dir}/sky_cloudy.svg')
 
 
 def load_forecast_data():

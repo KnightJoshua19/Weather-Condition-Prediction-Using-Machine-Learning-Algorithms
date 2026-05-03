@@ -185,4 +185,28 @@ document.addEventListener('DOMContentLoaded', function() {
     overlay.setAttribute('aria-hidden', 'true');
     overlay.innerHTML = '';
   }
+  // Sidebar date/time update and collapse toggle
+  const dateTimeEl = document.getElementById('currentDateTime');
+  const sidebarEl = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+
+  function updateDateTime() {
+    if (!dateTimeEl) return;
+    const now = new Date();
+    const opts = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    dateTimeEl.textContent = now.toLocaleString(undefined, opts);
+  }
+  updateDateTime();
+  setInterval(updateDateTime, 1000);
+
+  if (sidebarToggle && sidebarEl) {
+    sidebarToggle.addEventListener('click', function() {
+      sidebarEl.classList.toggle('collapsed');
+      if (sidebarEl.classList.contains('collapsed')) {
+        sidebarToggle.textContent = '⮞';
+      } else {
+        sidebarToggle.textContent = '⮜';
+      }
+    });
+  }
 });

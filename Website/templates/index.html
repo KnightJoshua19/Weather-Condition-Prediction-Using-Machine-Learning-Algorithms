@@ -105,6 +105,14 @@
     .btn-primary:hover{ background:#1f3c5a; border-color:#1f3c5a; }
     @media(max-width:992px){ .hero-title{ font-size:34px; } }
     @media(max-width:768px){ .dashboard-grid{ gap:1rem; } .weather-temp{ font-size:32px; }.forecast-card{ padding:0.95rem; }}
+    /* Sidebar enhancements for live date/time and collapse behavior */
+    .sidebar-top { padding: 0.6rem 1rem; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    #currentDateTime { color: #fff; font-weight:700; font-size:0.95rem; }
+    #sidebarToggle { background: rgba(255,255,255,0.12); border: none; color: #fff; padding: 6px 8px; border-radius:8px; cursor:pointer; }
+    .sidebar-body{ padding: 0 1.5rem 1.5rem; }
+    .sidebar.collapsed{ width:80px; min-width:80px; overflow:hidden; transition: width 240ms ease; }
+    .sidebar.collapsed .sidebar-body{ display:none; }
+    .sidebar.collapsed #sidebarToggle{ transform: rotate(180deg); }
   </style>
 </head>
 <body>
@@ -133,38 +141,45 @@
   </nav>
 
   <div class="main-content" id="mainContent">
-    <aside class="sidebar">
-      <h5>Predicted Weather</h5>
-      
-      {% if current_prediction.predicted_main %}
-      <div style="text-align: center; margin-bottom: 2rem;">
-        <div style="font-size: 3rem; margin-bottom: 0.5rem;">{{ weather_icon }}</div>
-        <div style="font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem;">{{ current_prediction.predicted_main }}</div>
-        <div style="font-size: 0.95rem; opacity: 0.95;">{{ current_prediction.predicted_description or 'Current outlook' }}</div>
-        <div style="font-size: 1.2rem; font-weight: 700; margin-top: 0.5rem;">Confidence: {{ current_prediction.confidence or '—' }}%</div>
+    <aside class="sidebar" id="sidebar" style="background: linear-gradient(135deg, rgba(77,161,169,0.72), rgba(121,215,190,0.52)), url('{{ background_image_url }}'); background-size: cover; background-position: center;">
+      <div class="sidebar-top">
+        <div id="currentDateTime"></div>
+        <button id="sidebarToggle" aria-label="Toggle sidebar">⮜</button>
       </div>
-      {% endif %}
+
+      <div class="sidebar-body">
+        <h5>Predicted Weather</h5>
       
-      <div style="border-top: 1px solid rgba(255,255,255,0.3); padding-top: 1.5rem; margin-top: 1.5rem;">
-        <div style="margin-bottom: 1.5rem;">
-          <div style="font-size: 0.85rem; opacity: 0.9;">Temperature</div>
-          <div style="font-size: 2.2rem; font-weight: 700;">{{ today.temp if today.temp is not none else '—' }}°C</div>
+        {% if current_prediction.predicted_main %}
+        <div class="sidebar-weather" style="text-align: center; margin-bottom: 2rem;">
+          <div style="font-size: 3rem; margin-bottom: 0.5rem;">{{ weather_icon }}</div>
+          <div style="font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem;">{{ current_prediction.predicted_main }}</div>
+          <div style="font-size: 0.95rem; opacity: 0.95;">{{ current_prediction.predicted_description or 'Current outlook' }}</div>
+          <div style="font-size: 1.2rem; font-weight: 700; margin-top: 0.5rem;">Confidence: {{ current_prediction.confidence or '—' }}%</div>
+        </div>
+        {% endif %}
+
+        <div style="border-top: 1px solid rgba(255,255,255,0.15); padding-top: 1.5rem; margin-top: 1.5rem;">
+          <div style="margin-bottom: 1.5rem;">
+            <div style="font-size: 0.85rem; opacity: 0.9; color: rgba(255,255,255,0.95);">Temperature</div>
+            <div style="font-size: 2.2rem; font-weight: 700; color: #fff;">{{ today.temp if today.temp is not none else '—' }}°C</div>
+          </div>
+          
+          <div style="margin-bottom: 1.5rem;">
+            <div style="font-size: 0.85rem; opacity: 0.9; color: rgba(255,255,255,0.95);">Humidity</div>
+            <div style="font-size: 2.2rem; font-weight: 700; color: #fff;">{{ today.humidity if today.humidity is not none else '—' }}%</div>
+          </div>
+          
+          <div style="margin-bottom: 1.5rem;">
+            <div style="font-size: 0.85rem; opacity: 0.9; color: rgba(255,255,255,0.95);">Wind Speed</div>
+            <div style="font-size: 2.2rem; font-weight: 700; color: #fff;">{{ today.wind if today.wind is not none else '—' }}</div>
+            <div style="font-size: 0.85rem; opacity: 0.9; color: rgba(255,255,255,0.95);">km/h</div>
+          </div>
         </div>
         
-        <div style="margin-bottom: 1.5rem;">
-          <div style="font-size: 0.85rem; opacity: 0.9;">Humidity</div>
-          <div style="font-size: 2.2rem; font-weight: 700;">{{ today.humidity if today.humidity is not none else '—' }}%</div>
-        </div>
-        
-        <div style="margin-bottom: 1.5rem;">
-          <div style="font-size: 0.85rem; opacity: 0.9;">Wind Speed</div>
-          <div style="font-size: 2.2rem; font-weight: 700;">{{ today.wind if today.wind is not none else '—' }}</div>
-          <div style="font-size: 0.85rem; opacity: 0.9;">km/h</div>
-        </div>
+        <button id="refreshButton" class="btn w-100" style="margin-top: 2rem;">Refresh</button>
+        <span id="refreshStatus" class="d-block mt-2" style="font-size:0.9rem; text-align: center; color: #fff;">Ready</span>
       </div>
-      
-      <button id="refreshButton" class="btn w-100" style="margin-top: 2rem;">Refresh</button>
-      <span id="refreshStatus" class="d-block mt-2" style="font-size:0.9rem; text-align: center;">Ready</span>
     </aside>
 
     <main class="content">
@@ -178,7 +193,11 @@
         <div class="tab-content">
           <div id="main" class="tab-pane active">
             <section class="panel weather-panel" style="background-image: url('{{ background_image_url }}'); min-height: 400px;">
-              <!-- Only sky, no other objects -->
+              <div class="panel-content">
+                <div class="hero-title">{{ current_prediction.predicted_main or 'Weather' }}</div>
+                <div class="hero-sub">{{ current_prediction.predicted_description or 'Current outlook' }}</div>
+                <div class="weather-temp" style="margin-top:10px;">Confidence: {{ current_prediction.confidence or '—' }}%</div>
+              </div>
             </section>
           </div>
           <div id="forecast" class="tab-pane">

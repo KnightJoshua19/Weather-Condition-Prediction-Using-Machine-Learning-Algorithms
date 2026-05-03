@@ -44,12 +44,15 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.decomposition import PCA
 import numpy as np
+import joblib
 
 
 # ================================
 # 2. LOAD DATASET
 # ================================
 DATA_DIR = Path(__file__).resolve().parent / "Weather Datasets"
+MODELS_DIR = Path(__file__).resolve().parent / "models"
+PIPELINE_PATH = MODELS_DIR / "weather_pipeline.joblib"
 weather_dataset = DATA_DIR / "202311_CombinedData.csv"
 
 if weather_dataset.exists():
@@ -183,9 +186,39 @@ else:
     feature_names = original_feature_names
 
 
-X_train, X_test, y_train, y_test = train_test_split(
+X_temp, X_test, y_temp, y_test = train_test_split(
     X_final, y, test_size=0.2, random_state=42, stratify=y
 )
+X_train, X_val, y_train, y_val = train_test_split(
+    X_temp, y_temp, test_size=0.25, random_state=42, stratify=y_temp
+)
+
+print(f"Data split: train={len(X_train)} rows, validation={len(X_val)} rows, test={len(X_test)} rows")
+
+
+def save_pipeline(
+    model,
+    scaler,
+    pca,
+    target_encoder,
+    categorical_encoders,
+    feature_columns,
+    apply_pca,
+    feature_names,
+):
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    pipeline = {
+        "model": model,
+        "scaler": scaler,
+        "pca": pca,
+        "target_encoder": target_encoder,
+        "categorical_encoders": categorical_encoders,
+        "feature_columns": feature_columns,
+        "apply_pca": apply_pca,
+        "feature_names": feature_names,
+    }
+    joblib.dump(pipeline, PIPELINE_PATH)
+    print(f"Saved trained pipeline to {PIPELINE_PATH}")
 
 
 # ================================
@@ -195,6 +228,16 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 Decision_Tree_Algorithm = DecisionTreeClassifier(random_state=42)
 Decision_Tree_Algorithm.fit(X_train, y_train)
+save_pipeline(
+    Decision_Tree_Algorithm,
+    scaler,
+    pca,
+    target_le,
+    categorical_encoders,
+    feature_columns,
+    APPLY_PCA,
+    feature_names,
+)
 
 
 # ================================
@@ -202,21 +245,25 @@ Decision_Tree_Algorithm.fit(X_train, y_train)
 # ================================
 
 
-def evaluate_model(model, name):
-    y_pred = model.predict(X_test)
+def evaluate_model(model, name, X_eval, y_eval, label="Test"):
+    y_pred = model.predict(X_eval)
+    image_name = f"{name.lower().replace(' ', '_')}_{label.lower()}_confusion_matrix.png"
+    if label.lower() == "test":
+        image_name = f"{name.lower().replace(' ', '_')}_confusion_matrix.png"
     result = {
         "name": name,
+        "label": label,
         "model": model,
-        "accuracy": accuracy_score(y_test, y_pred),
-        "report": classification_report(y_test, y_pred),
-        "confusion_matrix": confusion_matrix(y_test, y_pred),
-        "image_path": Path(f"{name.lower().replace(' ', '_')}_confusion_matrix.png"),
+        "accuracy": accuracy_score(y_eval, y_pred),
+        "report": classification_report(y_eval, y_pred),
+        "confusion_matrix": confusion_matrix(y_eval, y_pred),
+        "image_path": Path(image_name),
     }
 
 
     plt.figure(figsize=(6, 5))
     sns.heatmap(result["confusion_matrix"], annot=True, fmt="d", cmap="Blues")
-    plt.title(f"{name} Confusion Matrix")
+    plt.title(f"{name} {label} Confusion Matrix")
     plt.xlabel("Predicted")
     plt.ylabel("Actual")
     plt.tight_layout()
@@ -227,8 +274,10 @@ def evaluate_model(model, name):
     return result
 
 
+validation_result = evaluate_model(Decision_Tree_Algorithm, "Decision Tree", X_val, y_val, label="Validation")
+final_result = evaluate_model(Decision_Tree_Algorithm, "Decision Tree", X_test, y_test, label="Test")
 results = [
-    evaluate_model(Decision_Tree_Algorithm, "Decision Tree"),
+    final_result,
 ]
 
 feature_index = feature_names if len(feature_names) == len(Decision_Tree_Algorithm.feature_importances_) else X.columns
@@ -245,7 +294,7 @@ plt.savefig("feature_importance.png")
 plt.close()
 
 
-print("\nSaved visualizations: distribution.png, correlation_heatmap.png, decision_tree_confusion_matrix.png, feature_importance.png")
+print("\nSaved visualizations: distribution.png, correlation_heatmap.png, decision_tree_validation_confusion_matrix.png, decision_tree_test_confusion_matrix.png, feature_importance.png")
 
 
 # ================================
@@ -263,8 +312,10 @@ preprocessed_sample_columns = ['city_name', 'main.temp', 'main.humidity', 'wind.
 print(preprocessed_df[preprocessed_sample_columns].head(5))
 
 
-print("\n===== MODEL RESULTS =====")
-for result in results:
+print("\n===== MODEL RESULTS =====")print("\n--- Validation Results ---")
+print(f"Accuracy: {validation_result['accuracy']:.4f}")
+print("Classification Report:\n", validation_result["report"])
+print("Confusion Matrix:\n", validation_result["confusion_matrix"])for result in results:
     print(f"\n--- {result['name']} ---")
     print(f"Accuracy: {result['accuracy']:.4f}")
     print("Classification Report:\n", result["report"])
@@ -277,6 +328,8 @@ for result in results:
 
 # Prepare metrics for JSON export
 algorithms_data = []
+
+validation_report_dict = classification_report(y_val, validation_result['model'].predict(X_val), output_dict=True)
 
 for result in results:
     # Parse the classification report to extract metrics
@@ -292,25 +345,36 @@ for result in results:
     algorithm_entry = {
         "algorithm": result['name'],
         "timestamp": datetime.now().isoformat(),
+        "data_split": {
+            "train_ratio": 0.6,
+            "validation_ratio": 0.2,
+            "test_ratio": 0.2,
+            "random_state": 42
+        },
         "performance_metrics": {
             "accuracy": {
                 "value": float(result['accuracy']),
-                "description": "Classification accuracy - percentage of correct predictions",
+                "description": "Classification accuracy on the final test set",
                 "value_range": "[0, 1]"
             },
             "precision": {
                 "value": float(report_dict['weighted avg']['precision']),
-                "description": "Weighted average precision across all classes",
+                "description": "Weighted average precision on the final test set",
                 "value_range": "[0, 1]"
             },
             "recall": {
                 "value": float(report_dict['weighted avg']['recall']),
-                "description": "Weighted average recall across all classes",
+                "description": "Weighted average recall on the final test set",
                 "value_range": "[0, 1]"
             },
             "f1_score": {
                 "value": float(report_dict['weighted avg']['f1-score']),
-                "description": "Weighted average F1-score across all classes",
+                "description": "Weighted average F1-score on the final test set",
+                "value_range": "[0, 1]"
+            },
+            "validation_accuracy": {
+                "value": float(validation_report_dict['accuracy']),
+                "description": "Validation accuracy on the holdout validation set",
                 "value_range": "[0, 1]"
             }
         },
