@@ -1806,5 +1806,139 @@
             "value": 1.0,
             "description": "Mean predicted probability of the chosen weather.main label on the test set"
         }
+    },
+    {
+        "algorithm": "Decision Tree",
+        "timestamp": "2026-05-04T11:07:01.986495",
+        "data_split": {
+            "train_ratio": 0.6,
+            "validation_ratio": 0.2,
+            "test_ratio": 0.2,
+            "random_state": 42
+        },
+        "performance_metrics": {
+            "accuracy": {
+                "value": 0.9768566493955095,
+                "description": "Classification accuracy on the final test set",
+                "value_range": "[0, 1]"
+            },
+            "precision": {
+                "value": 0.9754424830785327,
+                "description": "Weighted average precision on the final test set",
+                "value_range": "[0, 1]"
+            },
+            "recall": {
+                "value": 0.9768566493955095,
+                "description": "Weighted average recall on the final test set",
+                "value_range": "[0, 1]"
+            },
+            "f1_score": {
+                "value": 0.9758571174478579,
+                "description": "Weighted average F1-score on the final test set",
+                "value_range": "[0, 1]"
+            },
+            "validation_accuracy": {
+                "value": 0.9744298548721493,
+                "description": "Validation accuracy on the holdout validation set",
+                "value_range": "[0, 1]"
+            }
+        },
+        "confusion_matrix": [
+            [
+                41,
+                34,
+                1,
+                0
+            ],
+            [
+                23,
+                2454,
+                3,
+                0
+            ],
+            [
+                0,
+                4,
+                332,
+                0
+            ],
+            [
+                0,
+                0,
+                2,
+                1
+            ]
+        ],
+        "label_probability": {
+            "value": 1.0,
+            "description": "Mean predicted probability of the chosen weather.main label on the test set"
+        }
+    },
+    {
+        "algorithm": "Decision Tree",
+        "timestamp": "2026-05-04T11:18:05.599317",
+        "data_split": {
+            "train_ratio": 0.6,
+            "validation_ratio": 0.2,
+            "test_ratio": 0.2,
+            "random_state": 42
+        },
+        "performance_metrics": {
+            "accuracy": {
+                "value": 0.9768566493955095,
+                "description": "Classification accuracy on the final test set",
+                "value_range": "[0, 1]"
+            },
+            "precision": {
+                "value": 0.9754424830785327,
+                "description": "Weighted average precision on the final test set",
+                "value_range": "[0, 1]"
+            },
+            "recall": {
+                "value": 0.9768566493955095,
+                "description": "Weighted average recall on the final test set",
+                "value_range": "[0, 1]"
+            },
+            "f1_score": {
+                "value": 0.9758571174478579,
+                "description": "Weighted average F1-score on the final test set",
+                "value_range": "[0, 1]"
+            },
+            "validation_accuracy": {
+                "value": 0.9744298548721493,
+                "description": "Validation accuracy on the holdout validation set",
+                "value_range": "[0, 1]"
+            }
+        },
+        "confusion_matrix": [
+            [
+                41,
+                34,
+                1,
+                0
+            ],
+            [
+                23,
+                2454,
+                3,
+                0
+            ],
+            [
+                0,
+                4,
+                332,
+                0
+            ],
+            [
+                0,
+                0,
+                2,
+                1
+            ]
+        ],
+        "label_probability": {
+            "value": 1.0,
+            "description": "Mean predicted probability of the chosen weather.main label on the test set"
+        }
     }
 ]
