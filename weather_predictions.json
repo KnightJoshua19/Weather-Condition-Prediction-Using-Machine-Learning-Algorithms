@@ -1,5 +1,5 @@
 {
-    "generated_at": "2026-05-03T19:23:45.422889",
+    "generated_at": "2026-05-04T11:18:08.860622",
     "current_weather": {
         "timestamp": "2023-11-24 00:05:05+08:00",
         "predicted_main": "Thunderstorm",
@@ -16,8 +16,8 @@
     },
     "weekly_forecast": [
         {
-            "date": "2026-05-04",
-            "day": "Monday",
+            "date": "2026-05-05",
+            "day": "Tuesday",
             "predicted_main": "Rain",
             "predicted_description": "light rain",
             "confidence": 100.0,
@@ -31,8 +31,8 @@
             }
         },
         {
-            "date": "2026-05-05",
-            "day": "Tuesday",
+            "date": "2026-05-06",
+            "day": "Wednesday",
             "predicted_main": "Rain",
             "predicted_description": "light rain",
             "confidence": 100.0,
@@ -46,8 +46,8 @@
             }
         },
         {
-            "date": "2026-05-06",
-            "day": "Wednesday",
+            "date": "2026-05-07",
+            "day": "Thursday",
             "predicted_main": "Rain",
             "predicted_description": "light rain",
             "confidence": 100.0,
@@ -61,8 +61,8 @@
             }
         },
         {
-            "date": "2026-05-07",
-            "day": "Thursday",
+            "date": "2026-05-08",
+            "day": "Friday",
             "predicted_main": "Rain",
             "predicted_description": "light rain",
             "confidence": 100.0,
@@ -76,8 +76,8 @@
             }
         },
         {
-            "date": "2026-05-08",
-            "day": "Friday",
+            "date": "2026-05-09",
+            "day": "Saturday",
             "predicted_main": "Rain",
             "predicted_description": "light rain",
             "confidence": 100.0,
@@ -91,8 +91,8 @@
             }
         },
         {
-            "date": "2026-05-09",
-            "day": "Saturday",
+            "date": "2026-05-10",
+            "day": "Sunday",
             "predicted_main": "Rain",
             "predicted_description": "light rain",
             "confidence": 100.0,
@@ -106,8 +106,8 @@
             }
         },
         {
-            "date": "2026-05-10",
-            "day": "Sunday",
+            "date": "2026-05-11",
+            "day": "Monday",
             "predicted_main": "Rain",
             "predicted_description": "light rain",
             "confidence": 100.0,

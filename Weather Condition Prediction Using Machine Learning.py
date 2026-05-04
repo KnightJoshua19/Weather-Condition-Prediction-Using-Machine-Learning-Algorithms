@@ -483,6 +483,19 @@ def predict_current_weather():
         "supporting_data": build_supporting_data(latest),
     }
 
+def predict_tomorrow_weather():
+    latest = raw_df.tail(1).iloc[0]
+    X_pred = encode_feature_row(latest)
+    pred_idx = Decision_Tree_Algorithm.predict(X_pred)[0]
+    probabilities = Decision_Tree_Algorithm.predict_proba(X_pred)[0]
+    predicted_main = target_le.inverse_transform([pred_idx])[0]
+    return {
+        "timestamp": str(latest.get("datetime", (datetime.now() + timedelta(days=1)).isoformat())),
+        "predicted_main": predicted_main,
+        "predicted_description": description_by_main.get(predicted_main, "Unknown"),
+        "confidence": round(float(np.max(probabilities)) * 100, 2),
+        "supporting_data": build_supporting_data(latest),
+    }
 
 def predict_weekly_weather():
     weekly_forecast = []
@@ -513,21 +526,14 @@ def predict_weekly_weather():
 
     return weekly_forecast
 
-
 # ================================
 # 11. PLOT METRICS OVER TIME (multi-line per metric)
 # ================================
 
-
-
-
-# ================================
-# 11. PLOT METRICS OVER TIME (multi-line per metric)
-# ================================
 records = []
 for entry in metrics_output.get('algorithms', []):
     try:
-        alg = entry.get('algorithm')
+        alg = entry.get('atlgorithm')
         ts = entry.get('timestamp')
         perf = entry.get('performance_metrics', {})
         if alg is None or ts is None or not perf:
@@ -616,6 +622,19 @@ if current_weather:
 else:
     print("Failed to generate current weather prediction")
 
+tomorrow_weather = predict_tomorrow_weather()
+if tomorrow_weather:
+    print("\n--- CURRENT WEATHER PREDICTION ---")
+    print(f"Timestamp: {tomorrow_weather['timestamp']}")
+    print(f"Predicted Weather Main: {tomorrow_weather['predicted_main']}")
+    print(f"Predicted Description: {tomorrow_weather['predicted_description']}")
+    print(f"Confidence: {tomorrow_weather['confidence']}%")
+    print("Supporting data:")
+    for k, v in tomorrow_weather['supporting_data'].items():
+        print(f"  {k}: {v}")
+else:
+    print("Failed to generate current weather prediction")
+
 weekly_forecast = predict_weekly_weather()
 if weekly_forecast:
     print("\n--- 7-DAY WEATHER FORECAST ---")
@@ -633,6 +652,7 @@ else:
 predictions_output = {
     "generated_at": datetime.now().isoformat(),
     "current_weather": current_weather,
+    "tomorrow_weather" : tomorrow_weather,
     "weekly_forecast": weekly_forecast
 }
 

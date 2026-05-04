@@ -233,7 +233,8 @@ def index():
     current_prediction = forecast.get('current_weather', {})
     weekly_forecast = forecast.get('weekly_forecast') or build_weekly_forecast(rain_prob, get_latest_weather_summary())
     today = current_prediction.get('supporting_data', {}) or get_latest_weather_summary()
-    tomorrow = forecast.get('tomorrow', {}) or build_today_tomorrow(today, rain_prob)[1]
+    tomorrow = forecast.get('tomorrow_weather', {}).get('supporting_data', {}) or get_latest_weather_summary()
+
     weather_icon, background_image_url = choose_background_asset(current_prediction.get('predicted_main'))
 
     return render_template(
