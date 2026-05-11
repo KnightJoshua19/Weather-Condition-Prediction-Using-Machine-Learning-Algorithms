@@ -2,6 +2,9 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.decomposition import PCA
 from pandas import DataFrame
+from pathlib import Path
+import pandas as pd
+
 
 class Pipeline:
     model : DecisionTreeClassifier
@@ -56,8 +59,8 @@ class Pipeline:
         self.feature_names = pipeline["feature_names"]
         self.feature_means = pipeline["feature_means"]
         self.feature_modes = pipeline["feature_modes"]
-        self.raw_df = pipeline["raw_df"]
-        self.preprocessed_df = pipeline["preprocessed_df"]
+        self.raw_df = self.load_df(pipeline["raw_df_path"])
+        self.preprocessed_df = self.load_df(pipeline["preprocessed_df_path"])
     
     def to_dict(self):
         pipeline = {
@@ -75,5 +78,17 @@ class Pipeline:
             "preprocessed_df" : self.preprocessed_df
         }
         return pipeline
+    
+    def load_df(self, filepath : str | Path):
+        if type(filepath) != Path: filepath = Path(filepath)
+        if filepath.exists():
+            data_file = filepath
+        else:
+            raise FileNotFoundError(f"File does not exist: {filepath}")
+
+        if data_file.suffix.lower() in [".xls", ".xlsx"]:
+            return pd.read_excel(data_file)
+        else:
+            return pd.read_csv(data_file)
     
     

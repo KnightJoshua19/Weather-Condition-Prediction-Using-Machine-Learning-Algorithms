@@ -30,7 +30,7 @@ Joshua M. Esclamado
 # 1. IMPORT LIBRARIES
 # ================================
 from pathlib import Path
-import json
+import json, os
 from datetime import datetime, timedelta
 
 import matplotlib
@@ -221,13 +221,19 @@ def save_pipeline(
         "feature_names": feature_names,
         "feature_means": feature_means,
         "feature_modes": feature_modes,
-        "raw_df": raw_df,
-        "preprocessed_df": preprocessed_df
+        "raw_df_path": weather_dataset,
+        "preprocessed_df_path": save_preprocessed_df()
     }
     joblib.dump(pipeline, PIPELINE_PATH)
     print(f"Saved trained pipeline to {PIPELINE_PATH}")
 
     return Pipeline(pipeline)
+
+def save_preprocessed_df():
+    filename, fileext = os.path.splitext(weather_dataset)
+    filename += "-preprocessed"
+    preprocessed_df.to_csv(filename + fileext)
+    return filename + fileext
 
 def get_averages():
     feature_means = {}

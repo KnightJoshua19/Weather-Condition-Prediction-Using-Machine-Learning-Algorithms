@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-    "generated_at": "2026-05-11T13:51:09.720802",
-=======
-    "generated_at": "2026-05-11T13:02:04.820636",
->>>>>>> 255ca6a3971933cafeb5c3217eb8a92a69b58916
+    "generated_at": "2026-05-11T15:19:22.292957",
     "current_weather": {
         "timestamp": "2023-11-24 00:05:05+08:00",
         "predicted_main": "Thunderstorm",
