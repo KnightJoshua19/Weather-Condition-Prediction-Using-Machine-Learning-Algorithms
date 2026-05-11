@@ -302,13 +302,9 @@ print("\nSaved visualizations: distribution.png, correlation_heatmap.png, decisi
 # ================================
 
 
-print("===== RAW DATA SAMPLE =====")
-raw_sample_columns = ['datetime', 'city_name', 'main.temp', 'weather.main', 'weather.description']
-print(raw_df[raw_sample_columns].head(5))
-
-
 print("\n===== PREPROCESSED DATA SAMPLE =====")
 preprocessed_sample_columns = ['city_name', 'main.temp', 'main.humidity', 'wind.speed', 'clouds.all', 'weather.main', 'weather.description']
+preprocessed_sample = preprocessed_df[preprocessed_sample_columns].head(5).to_dict(orient="records")
 print(preprocessed_df[preprocessed_sample_columns].head(5))
 
 
@@ -653,7 +649,8 @@ predictions_output = {
     "generated_at": datetime.now().isoformat(),
     "current_weather": current_weather,
     "tomorrow_weather" : tomorrow_weather,
-    "weekly_forecast": weekly_forecast
+    "weekly_forecast": weekly_forecast,
+    "preprocessed_sample": preprocessed_sample
 }
 
 predictions_json_path = Path(__file__).resolve().parent / "weather_predictions.json"
