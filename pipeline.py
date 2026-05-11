@@ -1,6 +1,7 @@
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.decomposition import PCA
+from pandas import DataFrame
 
 class Pipeline:
     model : DecisionTreeClassifier
@@ -13,6 +14,8 @@ class Pipeline:
     feature_names : list[str]
     feature_means : dict
     feature_modes : dict
+    raw_df : DataFrame
+    preprocessed_df : DataFrame
 
     def __init__(
             self,
@@ -25,7 +28,9 @@ class Pipeline:
             apply_pca : bool,
             feature_names : list[str],
             feature_means : dict,
-            feature_modes : dict
+            feature_modes : dict,
+            raw_df : DataFrame,
+            preprocessed_df : DataFrame
         ):
         self.model = model
         self.scaler = scaler
@@ -37,6 +42,8 @@ class Pipeline:
         self.feature_names = feature_names
         self.feature_means = feature_means
         self.feature_modes = feature_modes
+        self.raw_df = raw_df
+        self.preprocessed_df = preprocessed_df
     
     def __init__(self, pipeline : dict):
         self.model = pipeline["model"]
@@ -49,6 +56,8 @@ class Pipeline:
         self.feature_names = pipeline["feature_names"]
         self.feature_means = pipeline["feature_means"]
         self.feature_modes = pipeline["feature_modes"]
+        self.raw_df = pipeline["raw_df"]
+        self.preprocessed_df = pipeline["preprocessed_df"]
     
     def to_dict(self):
         pipeline = {
@@ -61,7 +70,9 @@ class Pipeline:
             "apply_pca": self.apply_pca,
             "feature_names": self.feature_names,
             "feature_means": self.feature_means,
-            "feature_modes": self.feature_modes
+            "feature_modes": self.feature_modes,
+            "raw_df" : self.raw_df,
+            "preprocessed_df" : self.preprocessed_df
         }
         return pipeline
     

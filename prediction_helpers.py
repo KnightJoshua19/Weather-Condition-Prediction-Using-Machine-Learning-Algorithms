@@ -2,9 +2,6 @@
 from datetime import datetime, timedelta
 from pipeline import Pipeline
 
-import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend to prevent display issues
-import matplotlib.pyplot as plt
 import pandas as pd
 from pandas import DataFrame
 import numpy as np
@@ -14,9 +11,8 @@ import joblib
 # 10. PREDICTION HELPERS
 # ================================
 
-description_by_main = 0
-def get_description_by_main(raw_df : DataFrame):
-    description_by_main = (raw_df.groupby("weather.main")["weather.description"]
+def get_description_by_main(raw_df : DataFrame, key, default = "Unknown"):
+    (raw_df.groupby("weather.main")["weather.description"]
     .agg(lambda s: s.mode().iloc[0] if not s.mode().empty else "Unknown")
     .to_dict())
 
@@ -30,19 +26,19 @@ def build_supporting_data(row):
         "weather.description": row.get("weather.description", None),
     }
 
-def encode_feature_row(row, pipeline : Pipeline, preprocessed_df : DataFrame):
+def encode_feature_row(row, pipeline : Pipeline):
     prepared = {}
     for col in pipeline.feature_columns:
         value = row.get(col) if hasattr(row, 'get') else row[col]
         if pd.isna(value):
-            if col in preprocessed_df.select_dtypes(include=["number"]).columns:
+            if col in pipeline.preprocessed_df.select_dtypes(include=["number"]).columns:
                 value = pipeline.feature_means[col]
             else:
                 mode_value = pipeline.feature_modes[col]
                 value = mode_value.iloc[0] if not mode_value.empty else "Unknown"
         prepared[col] = value
 
-    for col, le in pipeline["categorical_encoders"].items():
+    for col, le in pipeline.categorical_encoders.items():
         value = str(prepared[col])
         if value not in le.classes_:
             value = le.classes_[0]
@@ -54,39 +50,39 @@ def encode_feature_row(row, pipeline : Pipeline, preprocessed_df : DataFrame):
         values_scaled = pipeline.pca.transform(values_scaled)
     return values_scaled
 
-def predict_current_weather(raw_df: DataFrame, pipeline : Pipeline):
-    latest = raw_df.tail(1).illoc[0]
-    X_pred = encode_feature_row(latest)
+def predict_current_weather(pipeline : Pipeline):
+    latest = pipeline.raw_df.tail(1).iloc[0]
+    X_pred = encode_feature_row(latest, pipeline)
     pred_idx = pipeline.model.predict(X_pred)[0]
     probabilities = pipeline.model.predict_proba(X_pred)[0]
     predicted_main = pipeline.target_le.inverse_transform([pred_idx])[0]
     return {
         "timestamp": str(latest.get("datetime", datetime.now().isoformat())),
         "predicted_main": predicted_main,
-        "predicted_description": description_by_main.get(predicted_main, "Unknown"),
+        "predicted_description": get_description_by_main(pipeline.raw_df, predicted_main),
         "confidence": round(float(np.max(probabilities)) * 100, 2),
         "supporting_data": build_supporting_data(latest),
     }
 
-def predict_tomorrow_weather(raw_df : DataFrame, pipeline : Pipeline):
-    latest = raw_df.tail(1).iloc[0]
-    X_pred = encode_feature_row(latest)
+def predict_tomorrow_weather(pipeline : Pipeline):
+    latest = pipeline.raw_df.tail(1).iloc[0]
+    X_pred = encode_feature_row(latest, pipeline)
     pred_idx = pipeline.model.predict(X_pred)[0]
     probabilities = pipeline.model.predict_proba(X_pred)[0]
     predicted_main = pipeline.target_le.inverse_transform([pred_idx])[0]
     return {
         "timestamp": str(latest.get("datetime", (datetime.now() + timedelta(days=1)).isoformat())),
         "predicted_main": predicted_main,
-        "predicted_description": description_by_main.get(predicted_main, "Unknown"),
+        "predicted_description": get_description_by_main(pipeline.raw_df, predicted_main),
         "confidence": round(float(np.max(probabilities)) * 100, 2),
         "supporting_data": build_supporting_data(latest),
     }
 
-def predict_weekly_weather(raw_df : DataFrame, pipeline : Pipeline):
+def predict_weekly_weather(pipeline : Pipeline):
     weekly_forecast = []
     for day_offset in range(1, 8):
-        window_size = min(7 + day_offset - 1, len(raw_df))
-        window_data = raw_df.tail(window_size)
+        window_size = min(7 + day_offset - 1, len(pipeline.raw_df))
+        window_data = pipeline.raw_df.tail(window_size)
         avg_row = {}
         for col in pipeline.feature_columns:
             if col in window_data.select_dtypes(include=["number"]).columns:
@@ -96,11 +92,11 @@ def predict_weekly_weather(raw_df : DataFrame, pipeline : Pipeline):
                 avg_row[col] = mode_val.iloc[0] if not mode_val.empty else "Unknown"
 
 
-        X_pred = encode_feature_row(avg_row)
+        X_pred = encode_feature_row(avg_row, pipeline)
         pred_idx = pipeline.model.predict(X_pred)[0]
         probabilities = pipeline.model.predict_proba(X_pred)[0]
         predicted_main = pipeline.target_le.inverse_transform([pred_idx])[0]
-        weather_desc = description_by_main.get(predicted_main, "Unknown")
+        weather_desc = get_description_by_main(pipeline.raw_df, predicted_main)
         weekly_forecast.append({
             "date": (datetime.now() + timedelta(days=day_offset)).date().isoformat(),
             "day": (datetime.now() + timedelta(days=day_offset)).strftime("%A"),

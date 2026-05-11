@@ -4,6 +4,9 @@ import json
 import subprocess
 import sys
 from datetime import datetime, timedelta
+from pipeline import Pipeline
+import prediction_helpers
+from joblib import load
 
 app = Flask(__name__)
 app.secret_key = "change-me"
@@ -22,7 +25,10 @@ IMAGES = [
     "random_forest_confusion_matrix.png",
 ]
 PLACE_FORECAST_PATH = ROOT / "place_forecast.json"
+MODELS_DIR = ROOT / "models"
+PIPELINE_PATH = MODELS_DIR / "weather_pipeline.joblib"
 
+loaded_pipeline : dict = load(PIPELINE_PATH)
 
 def load_metrics():
     if not METRICS_PATH.exists():
@@ -90,6 +96,12 @@ def run_ml_pipeline():
     except Exception as e:
         return {"status": "error", "message": f"Error running model: {e}"}
 
+def create_new_predictions():
+    newPredictions = {}
+    newPredictions["current_weather"] = prediction_helpers.predict_current_weather(loaded_pipeline)
+    newPredictions["tomorrow_weather"] = prediction_helpers.predict_tomorrow_weather(loaded_pipeline)
+    newPredictions["weekly_forecast"] = prediction_helpers.predict_weekly_weather(loaded_pipeline)
+    return newPredictions
 
 def get_forecast_or_fallback():
     forecast = load_forecast_data()
