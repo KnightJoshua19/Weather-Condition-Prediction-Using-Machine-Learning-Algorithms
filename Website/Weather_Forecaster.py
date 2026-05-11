@@ -1,4 +1,6 @@
-from flask import Flask, render_template, send_from_directory, url_for, jsonify
+from flask import Flask, render_template, send_from_directory, url_for, jsonify, request
+from flask_cors import CORS
+from flask_socketio import SocketIO, emit, disconnect
 from pathlib import Path
 import json
 import subprocess
@@ -10,6 +12,8 @@ from joblib import load
 
 app = Flask(__name__)
 app.secret_key = "change-me"
+CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 ROOT = Path(__file__).resolve().parent.parent
 METRICS_PATH = ROOT / "algorithm_metrics.json"
@@ -135,7 +139,7 @@ def build_weekly_forecast(rain_prob, weather):
         else:
             condition = "Sunny"
             icon = "☀️"
-        forecasts.append({"day": day, "icon": icon, "condition": condition, "high": high, "low": low})
+        forecasts.append({"day": day, "icon": icon, "condition": condition, "predicted_main": condition, "predicted_description": condition, "confidence": int(prob * 100), "high": high, "low": low})
     return forecasts
 
 
@@ -261,6 +265,7 @@ def index():
         tomorrow=tomorrow,
         forecast_available=bool(weekly_forecast),
         place_forecast=place_forecast,
+        preprocessed_sample=forecast.get('preprocessed_sample', []),
     )
 
 
@@ -286,5 +291,45 @@ def api_forecast():
     return jsonify({"forecast": forecast})
 
 
+@app.route("/api/model-results", methods=["GET"])
+def api_model_results():
+    forecast = load_forecast_data()
+    preprocessed = forecast.get("preprocessed_sample", [])
+    return jsonify({"forecast": forecast, "preprocessed_sample": preprocessed})
+
+
+# WebSocket Events
+@socketio.on('connect')
+def handle_connect():
+    print(f"Client connected: {request.sid}")
+    # Send preprocessed data to the client upon connection
+    forecast = load_forecast_data()
+    preprocessed = forecast.get("preprocessed_sample", [])
+    emit('model_results', {
+        'preprocessed_sample': preprocessed,
+        'generated_at': forecast.get('generated_at', ''),
+        'current_weather': forecast.get('current_weather', {}),
+        'weekly_forecast': forecast.get('weekly_forecast', [])
+    })
+
+
+@socketio.on('request_model_results')
+def handle_request_model_results():
+    print(f"Client {request.sid} requested model results")
+    forecast = load_forecast_data()
+    preprocessed = forecast.get("preprocessed_sample", [])
+    emit('model_results', {
+        'preprocessed_sample': preprocessed,
+        'generated_at': forecast.get('generated_at', ''),
+        'current_weather': forecast.get('current_weather', {}),
+        'weekly_forecast': forecast.get('weekly_forecast', [])
+    })
+
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print(f"Client disconnected: {request.sid}")
+
+
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    socketio.run(app, debug=True, port=5000, allow_unsafe_werkzeug=True)

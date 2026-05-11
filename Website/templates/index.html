@@ -21,31 +21,37 @@
     body.font-size-small { --font-size-base: 14px; }
     body.font-size-large { --font-size-base: 18px; }
     body { font-size: var(--font-size-base); }
+    * { font-family: 'Lato', sans-serif; }
     .header { background: #fff; border-bottom: 1px solid var(--panel-border); padding: 1rem 0; display: flex; justify-content: space-between; align-items: center; }
-    .header .container { flex: 1; }
+    .header .container { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; }
     .settings-btn { background: none; border: 1px solid var(--color-dark); color: var(--color-dark); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
     .settings-btn:hover { background: rgba(46,80,119,0.08); }
     .nav-bar { background: var(--color-dark); color: #fff; padding: 0.5rem 0; }
     .nav-bar .nav-link { color: #fff; }
     .nav-bar .nav-link:hover { color: var(--color-light); }
-    .main-content { display: flex; flex: 1; flex-direction: row; }
+    .nav-bar .container { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; }
+    .nav-bar .nav { display: flex; gap: 1.5rem; align-items: center; }
+    .main-content { display: flex; flex: 1; flex-direction: row; transition: all 240ms ease; }
+    .main-content.sidebar-left { flex-direction: row; }
     .main-content.sidebar-right { flex-direction: row-reverse; }
-    .sidebar { width: 300px; background: linear-gradient(135deg, var(--color-mid) 0%, var(--color-light) 100%); border-left: none; border-right: 1px solid rgba(0,0,0,0.1); padding: 2rem 1.5rem; color: #fff; }
-    .sidebar h5 { color: #fff; font-weight: 700; font-size: 1.3rem; margin-bottom: 1.5rem; }
-    .sidebar .info-card { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; }
-    .sidebar .info-label { color: rgba(255,255,255,0.9); font-size: 0.85rem; }
-    .sidebar .info-value { color: #fff; font-size: 1.8rem; font-weight: 700; }
-    .sidebar .info-icon { font-size: 2rem; opacity: 1; }
-    .sidebar .btn { background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.4); color: #fff; }
-    .sidebar .btn:hover { background: rgba(255,255,255,0.35); }
-    .sidebar .text-muted { color: rgba(255,255,255,0.85); }
+    .sidebar { width: 300px; background: #ffffff; border-left: none; border-right: 1px solid rgba(37,48,60,0.08); padding: 2rem 1.5rem; color: #25303c; box-shadow: 0 18px 40px rgba(17,24,39,0.05); transition: width 240ms ease, opacity 240ms ease, padding 240ms ease; }
+    .sidebar.collapsed { width: 0; min-width: 0; opacity: 0; padding: 0; border-right: none; overflow: hidden; pointer-events: none; }
+    .sidebar.collapsed .sidebar-body { display: none; }
+    .sidebar h5 { color: #1b2630; font-weight: 700; font-size: 1.25rem; margin-bottom: 1.5rem; }
+    .sidebar .info-card { background: #f7f8fa; border: 1px solid rgba(37,48,60,0.08); color: #25303c; }
+    .sidebar .info-label { color: rgba(37,48,60,0.72); font-size: 0.85rem; }
+    .sidebar .info-value { color: #19202a; font-size: 1.8rem; font-weight: 700; }
+    .sidebar .info-icon { font-size: 1.8rem; opacity: 0.85; }
+    .sidebar .btn { background: #f3f4f6; border: 1px solid rgba(37,48,60,0.08); color: #25303c; }
+    .sidebar .btn:hover { background: #e8eaed; }
+    .sidebar .text-muted { color: rgba(37,48,60,0.65); }
     .content { flex: 1; padding: 1.5rem; }
     .footer { background: var(--color-dark); color: #fff; text-align: center; padding: 1rem 0; margin-top: auto; font-size: 0.9rem; }
-    .tabs-vertical { display: flex; }
-    .tabs-vertical .tab-buttons { width: 200px; border-right: 1px solid var(--panel-border); }
-    .tabs-vertical .tab-buttons button { width: 100%; padding: 1rem; border: none; background: #f8f9fa; border-bottom: 1px solid var(--panel-border); text-align: left; }
-    .tabs-vertical .tab-buttons button.active { background: var(--color-light); color: #fff; }
-    .tabs-vertical .tab-content { flex: 1; padding: 1rem; }
+    .toolbar { background: #fff; border-bottom: 1px solid rgba(37,48,60,0.08); padding: 0.75rem 1.25rem; }
+    .toolbar-buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+    .toolbar-buttons .tab-link { padding: 0.9rem 1.1rem; border: 1px solid rgba(37,48,60,0.12); border-radius: 12px; background: #f8f9fa; color: #25303c; font-weight: 700; text-decoration: none; cursor: pointer; }
+    .toolbar-buttons .tab-link.active { background: var(--color-dark); color: #fff; border-color: var(--color-dark); }
+    .tab-content { padding: 1rem; }
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
     .img-thumb { max-width: 100%; height: auto; border: 1px solid rgba(0,0,0,0.05); padding: 4px; background: #fff; }
@@ -106,9 +112,9 @@
     @media(max-width:992px){ .hero-title{ font-size:34px; } }
     @media(max-width:768px){ .dashboard-grid{ gap:1rem; } .weather-temp{ font-size:32px; }.forecast-card{ padding:0.95rem; }}
     /* Sidebar enhancements for live date/time and collapse behavior */
-    .sidebar-top { padding: 0.6rem 1rem; display:flex; align-items:center; justify-content:space-between; gap:8px; }
-    #currentDateTime { color: #fff; font-weight:700; font-size:0.95rem; }
-    #sidebarToggle { background: rgba(255,255,255,0.12); border: none; color: #fff; padding: 6px 8px; border-radius:8px; cursor:pointer; }
+    .sidebar-top { padding: 0.6rem 1rem; display:flex; align-items:center; justify-content:flex-end; gap:8px; }
+    #mainDateTime { color: #2e5077; font-weight: 700; font-size: 1.4rem; font-family: 'Lato', sans-serif; }
+    #sidebarToggle, #hamburgerToggle { background: rgba(37,48,60,0.06); border: none; color: #25303c; padding: 6px 10px; border-radius:8px; cursor:pointer; font-family: 'Lato', sans-serif; }
     .sidebar-body{ padding: 0 1.5rem 1.5rem; }
     .sidebar.collapsed{ width:80px; min-width:80px; overflow:hidden; transition: width 240ms ease; }
     .sidebar.collapsed .sidebar-body{ display:none; }
@@ -125,7 +131,7 @@
   </header>
 
   <nav class="nav-bar">
-    <div class="container">
+    <div class="container d-flex align-items-center justify-content-between">
       <ul class="nav">
         <li class="nav-item">
           <a class="nav-link" href="#">Home</a>
@@ -137,43 +143,50 @@
           <a class="nav-link" href="#">About</a>
         </li>
       </ul>
+      <button id="hamburgerToggle" class="settings-btn" aria-label="Toggle sidebar">☰</button>
     </div>
   </nav>
 
-  <div class="main-content" id="mainContent">
-    <aside class="sidebar" id="sidebar" style="background: linear-gradient(135deg, rgba(77,161,169,0.72), rgba(121,215,190,0.52)), url('{{ background_image_url }}'); background-size: cover; background-position: center;">
+  <div class="toolbar">
+    <div class="toolbar-buttons">
+      <a class="tab-link" data-tab="main" href="#">Weekly Weather</a>
+      <a class="tab-link active" data-tab="forecast" href="#">Weekly Forecast</a>
+      <a class="tab-link" data-tab="comparison" href="#">Today & Tomorrow</a>
+    </div>
+  </div>
+
+  <div class="main-content sidebar-left" id="mainContent">
+    <aside class="sidebar" id="sidebar" style="background: #f8f9fb;">
       <div class="sidebar-top">
-        <div id="currentDateTime"></div>
-        <button id="sidebarToggle" aria-label="Toggle sidebar">⮜</button>
+        <button id="sidebarToggle" aria-label="Toggle sidebar" style="margin-left: auto;">⮜</button>
       </div>
 
       <div class="sidebar-body">
-        <h5>Predicted Weather</h5>
       
         {% if current_prediction.predicted_main %}
         <div class="sidebar-weather" style="text-align: center; margin-bottom: 2rem;">
           <div style="font-size: 3rem; margin-bottom: 0.5rem;">{{ weather_icon }}</div>
-          <div style="font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem;">{{ current_prediction.predicted_main }}</div>
-          <div style="font-size: 0.95rem; opacity: 0.95;">{{ current_prediction.predicted_description or 'Current outlook' }}</div>
-          <div style="font-size: 1.2rem; font-weight: 700; margin-top: 0.5rem;">Confidence: {{ current_prediction.confidence or '—' }}%</div>
+          <div id="sidebarMain" style="font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem;">{{ current_prediction.predicted_main }}</div>
+          <div id="sidebarDesc" style="font-size: 0.95rem; opacity: 0.95;">{{ current_prediction.predicted_description or 'Current outlook' }}</div>
+          <div id="sidebarConfidence" style="font-size: 1.2rem; font-weight: 700; margin-top: 0.5rem;">{{ current_prediction.confidence or '—' }}%</div>
         </div>
         {% endif %}
 
         <div style="border-top: 1px solid rgba(255,255,255,0.15); padding-top: 1.5rem; margin-top: 1.5rem;">
           <div style="margin-bottom: 1.5rem;">
-            <div style="font-size: 0.85rem; opacity: 0.9; color: rgba(255,255,255,0.95);">Temperature</div>
-            <div style="font-size: 2.2rem; font-weight: 700; color: #fff;">{{ today.temp if today.temp is not none else '—' }}°C</div>
+            <div style="font-size: 0.85rem; opacity: 0.85; color: rgba(37,48,60,0.75);">Temperature</div>
+            <div id="todayTemp" style="font-size: 2.2rem; font-weight: 700; color: #19202a;">{{ today.temp if today.temp is not none else '—' }}°C</div>
           </div>
           
           <div style="margin-bottom: 1.5rem;">
-            <div style="font-size: 0.85rem; opacity: 0.9; color: rgba(255,255,255,0.95);">Humidity</div>
-            <div style="font-size: 2.2rem; font-weight: 700; color: #fff;">{{ today.humidity if today.humidity is not none else '—' }}%</div>
+            <div style="font-size: 0.85rem; opacity: 0.85; color: rgba(37,48,60,0.75);">Humidity</div>
+            <div id="todayHumidity" style="font-size: 2.2rem; font-weight: 700; color: #19202a;">{{ today.humidity if today.humidity is not none else '—' }}%</div>
           </div>
           
           <div style="margin-bottom: 1.5rem;">
-            <div style="font-size: 0.85rem; opacity: 0.9; color: rgba(255,255,255,0.95);">Wind Speed</div>
-            <div style="font-size: 2.2rem; font-weight: 700; color: #fff;">{{ today.wind if today.wind is not none else '—' }}</div>
-            <div style="font-size: 0.85rem; opacity: 0.9; color: rgba(255,255,255,0.95);">km/h</div>
+            <div style="font-size: 0.85rem; opacity: 0.85; color: rgba(37,48,60,0.75);">Wind Speed</div>
+            <div id="todayWind" style="font-size: 2.2rem; font-weight: 700; color: #19202a;">{{ today.wind if today.wind is not none else '—' }}</div>
+            <div style="font-size: 0.85rem; opacity: 0.85; color: rgba(37,48,60,0.75);">km/h</div>
           </div>
         </div>
         
@@ -183,44 +196,39 @@
     </aside>
 
     <main class="content">
-      <div class="tabs-vertical">
-        <div class="tab-buttons">
-          <button class="tab-button active" data-tab="main">Main Weather</button>
-          <button class="tab-button" data-tab="forecast">Weekly Forecast</button>
-          <button class="tab-button" data-tab="comparison">Today & Tomorrow</button>
-          <button class="tab-button" data-tab="places">Place Forecast</button>
-        </div>
-        <div class="tab-content">
-          <div id="main" class="tab-pane active">
+      <div id="mainDateTime" style="font-size: 1.4rem; font-weight: 700; color: #2e5077; margin-bottom: 1.5rem; font-family: 'Lato', sans-serif;"></div>
+      <div class="tab-content">
+          <div id="main" class="tab-pane">
             <section class="panel weather-panel" style="background-image: url('{{ background_image_url }}'); min-height: 400px;">
               <div class="panel-content">
-                <div class="hero-title">{{ current_prediction.predicted_main or 'Weather' }}</div>
-                <div class="hero-sub">{{ current_prediction.predicted_description or 'Current outlook' }}</div>
-                <div class="weather-temp" style="margin-top:10px;">Confidence: {{ current_prediction.confidence or '—' }}%</div>
+                <div class="hero-title" id="heroTitle">{{ current_prediction.predicted_main or 'Weather' }}</div>
+                <div class="hero-sub" id="heroDescription">{{ current_prediction.predicted_description or 'Current outlook' }}</div>
+                <div class="weather-temp" id="heroConfidence" style="margin-top:10px;">Confidence: {{ current_prediction.confidence or '—' }}%</div>
               </div>
             </section>
           </div>
-          <div id="forecast" class="tab-pane">
+          <div id="forecast" class="tab-pane active">
             <section class="panel forecast-panel">
               <div class="panel-header">
                 <h5>Weekly Forecast</h5>
                 <p class="section-text">Philippines outlook for the next seven days.</p>
               </div>
-              <div class="forecast-row weekly-grid">
+              <div class="forecast-row weekly-grid" id="forecastCards">
                 {% for day in weekly_forecast %}
                 <div class="forecast-card" role="button" tabindex="0"
                      data-day="{{ day.day }}"
                      data-icon="{{ day.icon }}"
-                     data-condition="{{ day.condition }}"
+                     data-condition="{{ day.condition if day.condition is defined else '' }}"
+                     data-predicted-main="{{ day.predicted_main if day.predicted_main is defined else day.condition }}"
                      data-high="{{ day.high }}"
                      data-low="{{ day.low }}"
                      data-confidence="{{ day.confidence if day.confidence is not none else '—' }}"
-                     data-description="{{ day.predicted_description if day.predicted_description is defined else day.condition }}"
-                     data-main="{{ day.predicted_main if day.predicted_main is defined else day.condition }}">
+                     data-description="{{ day.predicted_description if day.predicted_description is defined else day.condition }}">
                   <div class="day-label">{{ day.day }}</div>
                   <div class="forecast-icon">{{ day.icon }}</div>
-                  <div class="forecast-text">{{ day.condition }}</div>
-                  <div class="forecast-temp">{{ day.high }}° / {{ day.low }}°</div>
+                  <div class="forecast-text">{{ day.predicted_main if day.predicted_main is defined else day.condition }}</div>
+                  <div class="forecast-sub" style="font-size:0.88rem; color: rgba(37,48,60,0.65); margin-top:0.25rem;">{{ day.predicted_description if day.predicted_description is defined else day.condition }}</div>
+                  <div class="forecast-temp" style="margin-top:0.85rem; font-weight:700;">{{ day.high }}° / {{ day.low }}°</div>
                 </div>
                 {% endfor %}
               </div>
@@ -289,7 +297,6 @@
             </section>
           </div>
         </div>
-      </div>
     </main>
   </div>
 
@@ -302,7 +309,7 @@
   <div id="forecastOverlay" class="forecast-overlay d-none" aria-hidden="true"></div>
 
   <!-- Settings Modal -->
-  <div id="settingsModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; justify-content: center; align-items: center;">
+  <div id="settingsModal" class="d-none" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; display: flex;">
     <div style="background: #fff; border-radius: 12px; padding: 2rem; max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
       <h4 style="margin-bottom: 1.5rem; color: var(--color-dark);">Settings</h4>
       
@@ -330,6 +337,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

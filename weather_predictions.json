@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
     "generated_at": "2026-05-11T13:51:09.720802",
+=======
+    "generated_at": "2026-05-11T13:02:04.820636",
+>>>>>>> 255ca6a3971933cafeb5c3217eb8a92a69b58916
     "current_weather": {
         "timestamp": "2023-11-24 00:05:05+08:00",
         "predicted_main": "Thunderstorm",
@@ -133,6 +137,53 @@
                 "clouds.all": 55.46153846153846,
                 "weather.description": "light rain"
             }
+        }
+    ],
+    "preprocessed_sample": [
+        {
+            "city_name": "Alaminos",
+            "main.temp": 30.52,
+            "main.humidity": 70.0,
+            "wind.speed": 1.82,
+            "clouds.all": 93.0,
+            "weather.main": "Clouds",
+            "weather.description": "overcast clouds"
+        },
+        {
+            "city_name": "Angeles City",
+            "main.temp": 35.25,
+            "main.humidity": 55.0,
+            "wind.speed": 3.09,
+            "clouds.all": 40.0,
+            "weather.main": "Clouds",
+            "weather.description": "scattered clouds"
+        },
+        {
+            "city_name": "Antipolo",
+            "main.temp": 29.74,
+            "main.humidity": 72.0,
+            "wind.speed": 2.89,
+            "clouds.all": 14.0,
+            "weather.main": "Clouds",
+            "weather.description": "few clouds"
+        },
+        {
+            "city_name": "Bacolod",
+            "main.temp": 29.01,
+            "main.humidity": 78.0,
+            "wind.speed": 5.41,
+            "clouds.all": 66.0,
+            "weather.main": "Clouds",
+            "weather.description": "broken clouds"
+        },
+        {
+            "city_name": "Bacoor",
+            "main.temp": 32.05,
+            "main.humidity": 72.0,
+            "wind.speed": 2.57,
+            "clouds.all": 20.0,
+            "weather.main": "Clouds",
+            "weather.description": "few clouds"
         }
     ]
 }
