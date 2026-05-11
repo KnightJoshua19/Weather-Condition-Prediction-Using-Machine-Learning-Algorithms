@@ -12,9 +12,9 @@ import joblib
 # ================================
 
 def get_description_by_main(raw_df : DataFrame, key, default = "Unknown"):
-    (raw_df.groupby("weather.main")["weather.description"]
+    return (raw_df.groupby("weather.main")["weather.description"]
     .agg(lambda s: s.mode().iloc[0] if not s.mode().empty else "Unknown")
-    .to_dict())
+    .to_dict()).get(key, default)
 
 def build_supporting_data(row):
     return {

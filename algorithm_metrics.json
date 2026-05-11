@@ -2,7 +2,7 @@
     "algorithms": [
         {
             "algorithm": "Decision Tree",
-            "timestamp": "2026-05-11T13:23:06.841084",
+            "timestamp": "2026-05-11T13:51:09.072779",
             "data_split": {
                 "train_ratio": 0.6,
                 "validation_ratio": 0.2,

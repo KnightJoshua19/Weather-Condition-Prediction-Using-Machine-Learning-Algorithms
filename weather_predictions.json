@@ -1,9 +1,9 @@
 {
-    "generated_at": "2026-05-11T13:23:07.370817",
+    "generated_at": "2026-05-11T13:51:09.720802",
     "current_weather": {
         "timestamp": "2023-11-24 00:05:05+08:00",
         "predicted_main": "Thunderstorm",
-        "predicted_description": null,
+        "predicted_description": "thunderstorm with light rain",
         "confidence": 100.0,
         "supporting_data": {
             "city_name": "Zamboanga City",
@@ -17,7 +17,7 @@
     "tomorrow_weather": {
         "timestamp": "2023-11-24 00:05:05+08:00",
         "predicted_main": "Thunderstorm",
-        "predicted_description": null,
+        "predicted_description": "thunderstorm with light rain",
         "confidence": 100.0,
         "supporting_data": {
             "city_name": "Zamboanga City",
@@ -33,7 +33,7 @@
             "date": "2026-05-12",
             "day": "Tuesday",
             "predicted_main": "Rain",
-            "predicted_description": null,
+            "predicted_description": "light rain",
             "confidence": 100.0,
             "supporting_data": {
                 "city_name": "Tuguegarao",
@@ -41,14 +41,14 @@
                 "main.humidity": 90.14285714285714,
                 "wind.speed": 2.2271428571428573,
                 "clouds.all": 62.285714285714285,
-                "weather.description": null
+                "weather.description": "light rain"
             }
         },
         {
             "date": "2026-05-13",
             "day": "Wednesday",
             "predicted_main": "Rain",
-            "predicted_description": null,
+            "predicted_description": "light rain",
             "confidence": 100.0,
             "supporting_data": {
                 "city_name": "Toledo City",
@@ -56,14 +56,14 @@
                 "main.humidity": 90.0,
                 "wind.speed": 2.20625,
                 "clouds.all": 57.625,
-                "weather.description": null
+                "weather.description": "light rain"
             }
         },
         {
             "date": "2026-05-14",
             "day": "Thursday",
             "predicted_main": "Rain",
-            "predicted_description": null,
+            "predicted_description": "light rain",
             "confidence": 100.0,
             "supporting_data": {
                 "city_name": "Tayabas",
@@ -71,14 +71,14 @@
                 "main.humidity": 90.33333333333333,
                 "wind.speed": 2.261111111111111,
                 "clouds.all": 62.111111111111114,
-                "weather.description": null
+                "weather.description": "light rain"
             }
         },
         {
             "date": "2026-05-15",
             "day": "Friday",
             "predicted_main": "Rain",
-            "predicted_description": null,
+            "predicted_description": "light rain",
             "confidence": 100.0,
             "supporting_data": {
                 "city_name": "Tarlac City",
@@ -86,14 +86,14 @@
                 "main.humidity": 89.7,
                 "wind.speed": 2.102,
                 "clouds.all": 62.4,
-                "weather.description": null
+                "weather.description": "light rain"
             }
         },
         {
             "date": "2026-05-16",
             "day": "Saturday",
             "predicted_main": "Rain",
-            "predicted_description": null,
+            "predicted_description": "light rain",
             "confidence": 100.0,
             "supporting_data": {
                 "city_name": "Tanjay",
@@ -101,14 +101,14 @@
                 "main.humidity": 90.27272727272727,
                 "wind.speed": 2.0927272727272728,
                 "clouds.all": 58.63636363636363,
-                "weather.description": null
+                "weather.description": "light rain"
             }
         },
         {
             "date": "2026-05-17",
             "day": "Sunday",
             "predicted_main": "Rain",
-            "predicted_description": null,
+            "predicted_description": "light rain",
             "confidence": 100.0,
             "supporting_data": {
                 "city_name": "Tangub",
@@ -116,14 +116,14 @@
                 "main.humidity": 90.16666666666667,
                 "wind.speed": 2.1683333333333334,
                 "clouds.all": 54.5,
-                "weather.description": null
+                "weather.description": "light rain"
             }
         },
         {
             "date": "2026-05-18",
             "day": "Monday",
             "predicted_main": "Rain",
-            "predicted_description": null,
+            "predicted_description": "light rain",
             "confidence": 100.0,
             "supporting_data": {
                 "city_name": "Tandag",
@@ -131,7 +131,7 @@
                 "main.humidity": 90.23076923076923,
                 "wind.speed": 2.129230769230769,
                 "clouds.all": 55.46153846153846,
-                "weather.description": null
+                "weather.description": "light rain"
             }
         }
     ]
