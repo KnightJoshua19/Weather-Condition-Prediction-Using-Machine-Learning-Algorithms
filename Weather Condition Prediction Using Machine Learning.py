@@ -32,6 +32,7 @@ Joshua M. Esclamado
 from pathlib import Path
 import json
 from datetime import datetime, timedelta
+from pipeline import Pipeline
 
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend to prevent display issues
@@ -207,6 +208,7 @@ def save_pipeline(
     feature_names,
 ):
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    feature_means, feature_modes = get_averages()
     pipeline = {
         "model": model,
         "scaler": scaler,
@@ -216,10 +218,21 @@ def save_pipeline(
         "feature_columns": feature_columns,
         "apply_pca": apply_pca,
         "feature_names": feature_names,
+        "feature_means": feature_means,
+        "feature_modes": feature_modes
     }
     joblib.dump(pipeline, PIPELINE_PATH)
     print(f"Saved trained pipeline to {PIPELINE_PATH}")
 
+def get_averages():
+    feature_means = {}
+    feature_modes = {}
+    for col in feature_columns:
+        if col in preprocessed_df.select_dtypes(include=["number"]).columns:
+            feature_means[col] = preprocessed_df[col].mean()
+        else:
+            feature_modes[col] = preprocessed_df[col].mode()
+    return feature_means, feature_modes
 
 # ================================
 # 6. MODEL TRAINING
