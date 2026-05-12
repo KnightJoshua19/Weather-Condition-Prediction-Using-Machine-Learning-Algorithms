@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const sidebarPositionSelect = document.getElementById('sidebarPositionSelect');
   const mainContent = document.getElementById('mainContent');
   const yearSpan = document.getElementById('yearSpan');
+  const headerDate = document.getElementById('headerDate');
+  const sidebarLocation = document.getElementById('sidebarLocation');
   const heroTitle = document.getElementById('heroTitle');
   const heroDescription = document.getElementById('heroDescription');
   const heroConfidence = document.getElementById('heroConfidence');
@@ -24,6 +26,72 @@ document.addEventListener('DOMContentLoaded', function() {
   const todayHumidity = document.getElementById('todayHumidity');
   const todayWind = document.getElementById('todayWind');
   const forecastCardsContainer = document.getElementById('forecastCards');
+
+  // Apple-style weather icon mapping
+  const weatherIconMap = {
+    'Sunny': '☀️',
+    'Clear': '☀️',
+    'Partly Cloudy': '⛅',
+    'Cloudy': '☁️',
+    'Overcast': '☁️',
+    'Showers': '🌧️',
+    'Rain': '🌧️',
+    'Heavy Rain': '⛈️',
+    'Thunderstorm': '⛈️',
+    'Storm': '⛈️',
+    'Snow': '❄️',
+    'Hail': '🌨️',
+    'Fog': '🌫️',
+    'Mist': '🌫️',
+  };
+
+  // Update date and time in header
+  function updateHeaderDate() {
+    if (!headerDate) return;
+    const now = new Date();
+    const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+    const dateStr = now.toLocaleDateString('en-US', options);
+    headerDate.textContent = dateStr;
+  }
+
+  // Update date on page load and every minute
+  updateHeaderDate();
+  setInterval(updateHeaderDate, 60000);
+
+  // Set location based on dataset or default to Manila
+  function setLocation() {
+    if (!sidebarLocation) return;
+    // Default to Manila, will be overridden if Cagayan de Oro City is in dataset
+    sidebarLocation.textContent = 'Manila, Philippines';
+  }
+
+  setLocation();
+
+  // Update location after forecast loads
+  function updateLocationFromForecast(forecast) {
+    if (!sidebarLocation || !forecast) return;
+    const current = forecast.current_weather || {};
+    const supportingData = current.supporting_data || {};
+    const cityName = supportingData.city_name;
+    
+    if (cityName && cityName.toLowerCase().includes('cagayan')) {
+      sidebarLocation.textContent = `${cityName}, Philippines`;
+    } else if (cityName) {
+      sidebarLocation.textContent = `${cityName}, Philippines`;
+    } else {
+      sidebarLocation.textContent = 'Manila, Philippines';
+    }
+  }
+
+  // Get Apple-style weather icon
+  function getWeatherIcon(condition) {
+    if (!condition) return '☁️';
+    const normalized = Object.keys(weatherIconMap).find(key => 
+      condition.toLowerCase().includes(key.toLowerCase()) || 
+      key.toLowerCase().includes(condition.toLowerCase())
+    );
+    return weatherIconMap[normalized] || '☁️';
+  }
 
   // Initialize WebSocket connection for real-time model results
   const socket = io();
@@ -213,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function renderForecastData(forecast) {
     if (!forecast) return;
     const current = forecast.current_weather || {};
-    const today = current.supporting_data || {};
+    const supportingData = current.supporting_data || {};
     const weekly = forecast.weekly_forecast || [];
     const weekOrder = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const orderedWeekly = weekly.slice().sort((a, b) => {
@@ -225,23 +293,38 @@ document.addEventListener('DOMContentLoaded', function() {
       return aIndex - bIndex;
     });
 
+    // Update location from forecast data
+    updateLocationFromForecast(forecast);
+
+    const currentWeatherIcon = getWeatherIcon(current.predicted_main);
+
     if (heroTitle) heroTitle.textContent = current.predicted_main || 'Weekly Forecast';
     if (heroDescription) heroDescription.textContent = current.predicted_description || 'Your ML-powered outlook for the next 7 days';
     if (heroConfidence) heroConfidence.textContent = current.confidence != null ? `Confidence: ${current.confidence}%` : 'Confidence: —';
 
-    if (sidebarMain) sidebarMain.textContent = current.predicted_main || '—';
+    if (sidebarMain) {
+      sidebarMain.textContent = current.predicted_main || '—';
+      sidebarMain.parentElement.parentElement.querySelector('.sidebar-weather').style.display = 'block';
+      const weatherIcon = sidebarMain.parentElement.parentElement.querySelector('.sidebar-weather > div:first-child');
+      if (weatherIcon) weatherIcon.textContent = currentWeatherIcon;
+    }
     if (sidebarDesc) sidebarDesc.textContent = current.predicted_description || 'Current outlook';
     if (sidebarConfidence) sidebarConfidence.textContent = current.confidence != null ? `${current.confidence}%` : '—';
-    if (todayTemp) todayTemp.textContent = today.temp != null ? `${today.temp}°C` : '—';
-    if (todayHumidity) todayHumidity.textContent = today.humidity != null ? `${today.humidity}%` : '—';
-    if (todayWind) todayWind.textContent = today.wind != null ? `${today.wind}` : '—';
+    
+    // Use model predictions from supporting_data (convert keys from main.temp format)
+    const tempValue = supportingData['main.temp'];
+    const humidityValue = supportingData['main.humidity'];
+    const windValue = supportingData['wind.speed'];
+    
+    if (todayTemp) todayTemp.textContent = tempValue != null ? `${Math.round(tempValue)}°C` : '—';
+    if (todayHumidity) todayHumidity.textContent = humidityValue != null ? `${Math.round(humidityValue)}%` : '—';
+    if (todayWind) todayWind.textContent = windValue != null ? `${Math.round(windValue * 10) / 10}` : '—';
 
     if (forecastCardsContainer) {
       forecastCardsContainer.innerHTML = orderedWeekly.map(day => {
         const mainLabel = day.predicted_main || day.condition || 'Forecast';
         const description = day.predicted_description || day.condition || '';
-        const icon = day.icon || '☁️';
-        const confidence = day.confidence != null ? day.confidence : '—';
+        const icon = getWeatherIcon(mainLabel);
         const high = day.high != null ? day.high : '—';
         const low = day.low != null ? day.low : '—';
 
@@ -253,13 +336,13 @@ document.addEventListener('DOMContentLoaded', function() {
                data-predicted-main="${sanitize(mainLabel)}"
                data-high="${sanitize(high)}"
                data-low="${sanitize(low)}"
-               data-confidence="${sanitize(confidence)}"
+               data-confidence="—"
                data-description="${sanitize(description)}">
             <div class="day-label">${sanitize(day.day)}</div>
             <div class="forecast-icon">${sanitize(icon)}</div>
             <div class="forecast-text">${sanitize(mainLabel)}</div>
             <div class="forecast-sub" style="font-size:0.88rem; color: rgba(37,48,60,0.65); margin-top:0.25rem;">${sanitize(description)}</div>
-            <div class="forecast-temp" style="margin-top:0.85rem; font-weight:700;">${sanitize(high)}° / ${sanitize(low)}°</div>
+            <div class="forecast-temp" style="margin-top:0.85rem; font-weight:700; font-size:0.95rem;">${sanitize(high)}° / ${sanitize(low)}°</div>
           </div>
         `;
       }).join('');
@@ -330,15 +413,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function showForecastDetail(event) {
     const card = event.currentTarget || event.target;
+    const mainCondition = card.dataset.predictedMain || card.dataset.condition;
+    const weatherIcon = getWeatherIcon(mainCondition);
     const detail = {
       day: card.dataset.day,
-      icon: card.dataset.icon,
+      icon: weatherIcon,
       condition: card.dataset.condition,
       high: card.dataset.high,
       low: card.dataset.low,
       confidence: card.dataset.confidence,
       description: card.dataset.description,
-      main: card.dataset.predictedMain || card.dataset.condition,
+      main: mainCondition,
     };
 
     overlay.innerHTML = `
@@ -355,7 +440,6 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="detail-grid">
           <div class="detail-block"><strong>High</strong><span>${detail.high}°</span></div>
           <div class="detail-block"><strong>Low</strong><span>${detail.low}°</span></div>
-          <div class="detail-block"><strong>Confidence</strong><span>${detail.confidence}%</span></div>
         </div>
         <div class="detail-footer">Click the close icon to minimize this view and return to the weekly dashboard.</div>
       </div>
@@ -377,19 +461,6 @@ document.addEventListener('DOMContentLoaded', function() {
     overlay.setAttribute('aria-hidden', 'true');
     overlay.innerHTML = '';
   }
-
-  // Main content date/time update and collapse toggle
-  const mainDateTimeEl = document.getElementById('mainDateTime');
-
-  function updateDateTime() {
-    if (!mainDateTimeEl) return;
-    const now = new Date();
-    const dateString = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    mainDateTimeEl.textContent = dateString;
-  }
-
-  updateDateTime();
-  setInterval(updateDateTime, 1000);
 
   if (sidebarToggle && sidebarEl) {
     sidebarToggle.addEventListener('click', function() {

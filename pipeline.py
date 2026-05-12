@@ -20,47 +20,35 @@ class Pipeline:
     raw_df : DataFrame
     preprocessed_df : DataFrame
 
-    def __init__(
-            self,
-            model : DecisionTreeClassifier,
-            scaler : StandardScaler,
-            pca : PCA,
-            target_encoder : LabelEncoder,
-            categorical_encoders : dict,
-            feature_columns : list[str],
-            apply_pca : bool,
-            feature_names : list[str],
-            feature_means : dict,
-            feature_modes : dict,
-            raw_df : DataFrame,
-            preprocessed_df : DataFrame
-        ):
-        self.model = model
-        self.scaler = scaler
-        self.pca = pca
-        self.target_le = target_encoder
-        self.categorical_encoders = categorical_encoders
-        self.feature_columns = feature_columns
-        self.apply_pca = apply_pca
-        self.feature_names = feature_names
-        self.feature_means = feature_means
-        self.feature_modes = feature_modes
-        self.raw_df = raw_df
-        self.preprocessed_df = preprocessed_df
-    
-    def __init__(self, pipeline : dict):
-        self.model = pipeline["model"]
-        self.scaler = pipeline["scaler"]
-        self.pca = pipeline["pca"]
-        self.target_le = pipeline["target_encoder"]
-        self.categorical_encoders = pipeline["categorical_encoders"]
-        self.feature_columns = pipeline["feature_columns"]
-        self.apply_pca = pipeline["apply_pca"]
-        self.feature_names = pipeline["feature_names"]
-        self.feature_means = pipeline["feature_means"]
-        self.feature_modes = pipeline["feature_modes"]
-        self.raw_df = self.load_df(pipeline["raw_df_path"])
-        self.preprocessed_df = self.load_df(pipeline["preprocessed_df_path"])
+    def __init__(self, pipeline : dict = None, **kwargs):
+        if isinstance(pipeline, dict):
+            # Initialize from dictionary
+            self.model = pipeline["model"]
+            self.scaler = pipeline["scaler"]
+            self.pca = pipeline["pca"]
+            self.target_le = pipeline["target_encoder"]
+            self.categorical_encoders = pipeline["categorical_encoders"]
+            self.feature_columns = pipeline["feature_columns"]
+            self.apply_pca = pipeline["apply_pca"]
+            self.feature_names = pipeline["feature_names"]
+            self.feature_means = pipeline["feature_means"]
+            self.feature_modes = pipeline["feature_modes"]
+            self.raw_df = self.load_df(pipeline["raw_df_path"])
+            self.preprocessed_df = self.load_df(pipeline["preprocessed_df_path"])
+        else:
+            # Initialize from individual parameters
+            self.model = kwargs.get("model")
+            self.scaler = kwargs.get("scaler")
+            self.pca = kwargs.get("pca")
+            self.target_le = kwargs.get("target_encoder")
+            self.categorical_encoders = kwargs.get("categorical_encoders")
+            self.feature_columns = kwargs.get("feature_columns")
+            self.apply_pca = kwargs.get("apply_pca")
+            self.feature_names = kwargs.get("feature_names")
+            self.feature_means = kwargs.get("feature_means")
+            self.feature_modes = kwargs.get("feature_modes")
+            self.raw_df = kwargs.get("raw_df")
+            self.preprocessed_df = kwargs.get("preprocessed_df")
     
     def to_dict(self):
         pipeline = {

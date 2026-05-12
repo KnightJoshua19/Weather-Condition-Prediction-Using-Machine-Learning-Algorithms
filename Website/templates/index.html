@@ -119,30 +119,38 @@
     .sidebar.collapsed{ width:80px; min-width:80px; overflow:hidden; transition: width 240ms ease; }
     .sidebar.collapsed .sidebar-body{ display:none; }
     .sidebar.collapsed #sidebarToggle{ transform: rotate(180deg); }
+    /* Header redesign */
+    .header { padding: 1.5rem 0; }
+    .header .container { flex-direction: row; align-items: center; justify-content: space-between; }
+    .header-title-group { display: flex; flex-direction: column; gap: 0.2rem; }
+    .header-title-group h1 { margin: 0; }
+    .header-date { font-size: 1.1rem; font-weight: 700; color: var(--color-dark); white-space: nowrap; }
+    /* Hamburger button - white color */
+    #hamburgerToggle { color: #fff !important; font-size: 1.3rem; padding: 0.6rem 0.8rem; }
+    #hamburgerToggle:hover { background: rgba(255,255,255,0.15); }
+    /* Toolbar enhancements */
+    .toolbar { display: flex; justify-content: space-between; align-items: center; }
+    .toolbar-buttons { margin: 0; flex: 1; }
+    .toolbar-settings { background: none; border: 1px solid var(--color-dark); color: var(--color-dark); padding: 0.65rem 1.2rem; border-radius: 6px; cursor: pointer; font-size: 1.2rem; font-weight: 700; }
+    .toolbar-settings:hover { background: rgba(46,80,119,0.08); }
+    /* Weather icon mapping for Apple-style */
+    .weather-icon-svg { font-size: 1.8rem; }
   </style>
 </head>
 <body>
   <header class="header">
     <div class="container">
-      <h1 style="font-family: 'Georgia', serif; color: var(--color-dark);">Philippines Weather Forecast</h1>
-      <div style="color:var(--color-dark); margin-top:-8px;">Interactive weekly weather dashboard with ML-powered predictions</div>
+      <div class="header-title-group">
+        <h1 style="font-family: 'Georgia', serif; color: var(--color-dark); margin: 0;">Philippines Weather Forecast</h1>
+        <div style="color:var(--color-dark);">A Predictive Machine Learning for Weather Condition</div>
+      </div>
+      <div class="header-date" id="headerDate"></div>
     </div>
-    <button class="settings-btn" id="settingsBtn">⚙ Settings</button>
   </header>
 
   <nav class="nav-bar">
     <div class="container d-flex align-items-center justify-content-between">
-      <ul class="nav">
-        <li class="nav-item">
-          <a class="nav-link" href="#">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Forecast</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">About</a>
-        </li>
-      </ul>
+      <div style="flex: 1;"></div>
       <button id="hamburgerToggle" class="settings-btn" aria-label="Toggle sidebar">☰</button>
     </div>
   </nav>
@@ -153,6 +161,7 @@
       <a class="tab-link active" data-tab="forecast" href="#">Weekly Forecast</a>
       <a class="tab-link" data-tab="comparison" href="#">Today & Tomorrow</a>
     </div>
+    <button class="toolbar-settings" id="settingsBtn" title="Settings">⚙ Settings</button>
   </div>
 
   <div class="main-content sidebar-left" id="mainContent">
@@ -162,6 +171,7 @@
       </div>
 
       <div class="sidebar-body">
+        <div id="sidebarLocation" style="font-size: 0.9rem; font-weight: 700; color: #2e5077; margin-bottom: 1.5rem; text-align: center;">—</div>
       
         {% if current_prediction.predicted_main %}
         <div class="sidebar-weather" style="text-align: center; margin-bottom: 2rem;">
@@ -196,7 +206,6 @@
     </aside>
 
     <main class="content">
-      <div id="mainDateTime" style="font-size: 1.4rem; font-weight: 700; color: #2e5077; margin-bottom: 1.5rem; font-family: 'Lato', sans-serif;"></div>
       <div class="tab-content">
           <div id="main" class="tab-pane">
             <section class="panel weather-panel" style="background-image: url('{{ background_image_url }}'); min-height: 400px;">
@@ -228,7 +237,7 @@
                   <div class="forecast-icon">{{ day.icon }}</div>
                   <div class="forecast-text">{{ day.predicted_main if day.predicted_main is defined else day.condition }}</div>
                   <div class="forecast-sub" style="font-size:0.88rem; color: rgba(37,48,60,0.65); margin-top:0.25rem;">{{ day.predicted_description if day.predicted_description is defined else day.condition }}</div>
-                  <div class="forecast-temp" style="margin-top:0.85rem; font-weight:700;">{{ day.high }}° / {{ day.low }}°</div>
+                  <div class="forecast-temp" style="margin-top:0.85rem; font-weight:700; font-size:0.95rem;">{{ day.high }}° / {{ day.low }}°</div>
                 </div>
                 {% endfor %}
               </div>

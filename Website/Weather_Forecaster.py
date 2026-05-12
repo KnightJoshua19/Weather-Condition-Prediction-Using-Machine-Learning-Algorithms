@@ -6,6 +6,11 @@ import json
 import subprocess
 import sys
 from datetime import datetime, timedelta
+
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from pipeline import Pipeline
 import prediction_helpers
 from joblib import load
@@ -15,7 +20,6 @@ app.secret_key = "change-me"
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-ROOT = Path(__file__).resolve().parent.parent
 METRICS_PATH = ROOT / "algorithm_metrics.json"
 METRICS_DIR = ROOT / "metrics"
 FORECAST_PATH = ROOT / "weather_predictions.json"
