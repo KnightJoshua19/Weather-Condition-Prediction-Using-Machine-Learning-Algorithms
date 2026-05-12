@@ -47,6 +47,7 @@ import numpy as np
 import joblib
 
 from pipeline import Pipeline
+from transformers import pipline as pln
 import prediction_helpers
 
 # ================================
